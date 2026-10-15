@@ -146,6 +146,11 @@ ol.steps li::before{content:counter(s,decimal-leading-zero);font-family:var(--fo
 .cards{display:grid;gap:clamp(.4rem,.9vw,.95rem);
   grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))}
 .cards.c4{grid-template-columns:repeat(4,1fr)}
+.cards.c5{grid-template-columns:repeat(5,1fr)}
+.cards.c5 .card{padding:clamp(.45rem,.8vw,.85rem);gap:.35em}
+.cards.c5 .card h3{font-size:clamp(1.05rem,1.4vw,1.35rem)}
+.cards.c5 .card p{line-height:1.28}
+.slide .callout.checklist-callout{max-width:none;padding:clamp(.4rem,.8vw,.7rem) clamp(.75rem,1.2vw,1.1rem)}
 .cards.c3{grid-template-columns:repeat(3,1fr)}
 .cards.c2{grid-template-columns:repeat(2,1fr)}
 .card{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--line);
@@ -430,12 +435,12 @@ svg.fig .drop{font-family:var(--font-mono);font-size:18px;fill:var(--no)}
   .nav-dots{display:none}
 }
 @media (max-width:900px){
-  .cards.c4{grid-template-columns:repeat(2,1fr)}
+  .cards.c4,.cards.c5{grid-template-columns:repeat(2,1fr)}
   .stem{display:none}
   .meme-stage,.twist-layout{grid-template-columns:1fr}
 }
 @media (max-width:600px){
-  .cards.c4,.cards.c3,.cards.c2,.pair{grid-template-columns:1fr}
+  .cards.c5,.cards.c4,.cards.c3,.cards.c2,.pair{grid-template-columns:1fr}
   .slide-index ol{columns:1}
 }
 
@@ -1245,36 +1250,45 @@ svg.fig .drop{font-family:var(--font-mono);font-size:18px;fill:var(--no)}
   </div>
 </section>
 
-<!-- ======================= B3: CÓMO SE VE UN BUEN TRABAJO ======================= -->
-<section class="slide" data-block="3" data-title="Cómo se ve un buen trabajo (Saber / Ser / Hacer)">
-  <p class="kicker reveal">Criterios de desempeño en sala</p>
-  <h2 class="reveal">Cómo se ve un buen trabajo</h2>
-  <div class="table-wrap reveal">
-    <table>
-      <caption>Las tres dimensiones aplicadas al pitch de 3 minutos y al mini-deck de cuatro slides sin código</caption>
-      <thead>
-        <tr><th>Dimensión</th><th>Qué se mira en el pitch</th><th>Se cumple cuando</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <th>Saber</th>
-          <td><em>Evidencia y contraste</em></td>
-          <td>Las cifras sostienen con rigor el mensaje, tienen contraste numérico claro y no hay código ni tecnicismos innecesarios en pantalla.</td>
-        </tr>
-        <tr class="on">
-          <th>Ser</th>
-          <td><em>Presencia y escucha</em></td>
-          <td>Sostiene el pitch sin leer las slides, remata con la acción concreta y recibe el feedback anotando sin ponerse a la defensiva.</td>
-        </tr>
-        <tr>
-          <th>Hacer</th>
-          <td><em>Estructura y tiempo</em></td>
-          <td>Cumple la secuencia de 4 slides (Contexto &rarr; Hallazgo &rarr; Implicación &rarr; Acción) y clava el pitch dentro de los 180 segundos (3 minutos) sin corte de micrófono.</td>
-        </tr>
-      </tbody>
-    </table>
+<!-- ======================= B3: CHECKLIST DEL PITCH ======================= -->
+<section class="slide" data-block="3" data-title="Checklist del pitch: las 5 piezas de tu historia">
+  <p class="kicker reveal">BLOQUE 3 &middot; RETO &middot; CHECKLIST ANTES DE PRESENTAR</p>
+  <h2 class="reveal">Lo que debe tener tu presentación</h2>
+  <div class="cards c5 reveal">
+    <article class="card">
+      <span class="k">Apertura oral &middot; 0–15s</span>
+      <h3>Hook</h3>
+      <p><b>Función:</b> La primera frase es la conclusión o tensión.</p>
+      <p><b>Regla:</b> Cero hablar de Python, CSVs o limpieza. Instala la urgencia.</p>
+    </article>
+    <article class="card">
+      <span class="k">Slide 1 &middot; ~30s</span>
+      <h3>Contexto</h3>
+      <p><b>Función:</b> El terreno común y la pregunta a resolver.</p>
+      <p><b>Regla:</b> ¿Cuál es la promesa de partida y quién decide?</p>
+    </article>
+    <article class="card on">
+      <span class="k">Slide 2 &middot; ~60s</span>
+      <h3>Hallazgo</h3>
+      <p><b>Función:</b> La cifra central con contraste numérico claro.</p>
+      <p><b>Regla:</b> Promesa vs. realidad. Un solo gráfico con foco (data-ink).</p>
+    </article>
+    <article class="card warn">
+      <span class="k">Slide 3 &middot; ~45s</span>
+      <h3>Implicación</h3>
+      <p><b>Función:</b> El impacto de no actuar para este decisor.</p>
+      <p><b>Regla:</b> Costo financiero, personas afectadas o riesgo operativo.</p>
+    </article>
+    <article class="card good">
+      <span class="k">Slide 4 &middot; ~30s</span>
+      <h3>Acción</h3>
+      <p><b>Función:</b> La decisión operativa para el próximo lunes.</p>
+      <p><b>Regla:</b> Responsable con nombre propio, plazo exacto y métrica de éxito.</p>
+    </article>
   </div>
-  <p class="lead reveal">Este ensayo entrena la habilidad central del analista: <strong>hacer que las personas con poder de decisión entiendan y actúen en tres minutos</strong>.</p>
+  <div class="callout checklist-callout reveal">
+    <p><b>La prueba de fuego:</b> Si lees solo los 4 títulos seguidos ya cuentas la historia completa, y la última slide deja una orden de trabajo real para el lunes.</p>
+  </div>
 </section>
 
 <!-- ======================= CIERRE ======================= -->
