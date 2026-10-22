@@ -3,74 +3,53 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Clase 10 · Laboratorio integrador: ensayo del Momento 2 | Analítica de Datos</title>
-<meta name="description" content="Clase 10 de Analítica de Datos: laboratorio de ensayo del Momento 2. Lectura de la rúbrica real, los cuatro modos de falla, sustentación de ejemplo valorada en voz alta, y ensayo cronometrado con feedback entre pares y clínica del profesor.">
+<title>Clase 10 · Visualización interactiva: Plotly + Streamlit | Analítica de Datos</title>
+<meta name="description" content="Clase 10 de Analítica de Datos (UCC): De la narrativa fija al descubrimiento autónomo. Dashboard explicativo vs exploratorio, patrón arquitectónico de 6 pasos, ciclo reactivo de Streamlit, robustez de interfaz y sustentación del Momento 2.">
 <style>
 /* ============================================================================
-   CLASE 10 — "GEOMETRÍA PASTEL"
+   CLASE 10 — "CONSOLA NEÓN" (Familia Neon Cyber)
    Estética documentada en clase10/slides/ESTETICA.md
    Contrato invariante: design/CONTRATO.md (9 invariantes)
 
    Cero dependencias externas: sin CDN, sin fuentes remotas, sin librerías.
-   Todo el CSS y el JS viven en este archivo.
+   Todo el CSS, el JS y los diagramas viven en este archivo.
+   Compatible plenamente con protocolo file:// y visualización offline.
 
-   Motivo rector: el ensayo es un boceto. Formas planas, grandes y mates que
-   todavía se pueden mover de sitio: círculo, arco y cuña. Cero degradados,
-   cero sombras, cero brillo. La paleta es deliberadamente amable porque hoy
-   se espera que los equipos fallen delante de un compañero y lo corrijan; el
-   salto visual hacia el Sobrio Institucional de la clase 11 comunica el cambio
-   de registro sin que nadie lo anuncie.
-
-   Restricción del contrato respetada por construcción: esta clase no lleva
-   ningún bloque de código en ninguna slide. No hay `pre` ni `code` en el
-   documento, ni antes ni después de la divisoria del bloque 2.
-   Y no hay ninguna duración en pantalla: los tiempos viven solo en
-   clase10/notes/professor_notes.md.
+   Motivo rector: el control que se enciende.
+   Regla dura Bloque 1: CERO bloques <pre> o <code> en diapositivas teóricas.
+   Nombres de funciones y decoradores se escriben con .term (texto corrido).
    ========================================================================= */
 
-/* ---- Tokens. Los NOMBRES son parte del contrato; los valores son de esta clase ---- */
 :root{
-  --bg:#F7F3EC;          /* papel cálido mate */
-  --surface:#FFFFFF;
-  --surface-2:#EFE8DD;
-  --line:#DCD2C3;
-  --fg:#231F1C;          /* tinta */
-  --muted:#57503F;       /* secundario, AA sobre el papel */
-  --accent:#2F8F7E;      /* menta profunda: el acento por defecto */
-  --peach:#C4552F;       /* durazno quemado: lo que cuesta */
-  --lilac:#5F4F9C;       /* lila: lo que se decide */
-  --sand:#B98A22;        /* arena: lo que se advierte */
-  --accent-ink:#FFFFFF;
-  /* ---- Variantes de tinta: SOLO para texto ----------------------------------
-     Los tres acentos pastel (menta, durazno, arena) estan calibrados para
-     rellenos, bandas y bordes, donde el area es grande y el contraste no manda.
-     Como TEXTO pequeno se caen: sobre el papel rinden 3,55 / 4,05 / 2,82, que en
-     un salon con luz ambiente y un proyector lavado deja de leerse.
-     Cada uno tiene aqui una variante mas profunda de la MISMA familia, que se usa
-     unicamente donde el acento es texto (strong, em, kicker, tag, celdas mono).
-     Rellenos, bandas, bordes, puntos y chips siguen con el color original: la
-     identidad del deck no cambia, solo el texto sube de contraste.
-     Sobre el papel #F7F3EC: menta 6,67 - durazno 6,73 - arena 6,85.
-     En impresion el fondo es blanco y estas tres suben todavia mas
-     (7,38 / 7,44 / 7,58), por eso NO se redefinen dentro de @media print. */
-  --accent-deep:#1C6053;   /* menta de tinta  */
-  --peach-deep:#93381A;    /* durazno de tinta */
-  --sand-deep:#6F4E0E;     /* arena de tinta   */
+  --bg:#06070E;          /* Consola profunda */
+  --surface:#10131F;     /* Panel base */
+  --surface-2:#171B2B;   /* Panel atenuado */
+  --line:#262C42;        /* Borde de retícula */
+  --fg:#EAF0FF;          /* Texto principal */
+  --muted:#9AA6CE;       /* Texto secundario (AA sobre --bg) */
+  --accent:#2BF5D0;      /* Cian de señal */
+  --accent-2:#FF6FB0;    /* Magenta de alerta */
+  --accent-ink:#04121C;  /* Texto sobre cian */
+  --yes:#2BF5D0;
+  --no:#FF6FB0;
+  --code-bg:#0A0D18;
+  --code-fg:#DCE6FF;
 
-  --font-display:"Avenir Next","Futura","Century Gothic","Segoe UI",system-ui,sans-serif;
+  --font-display:"Helvetica Neue",Helvetica,"Segoe UI",Arial,sans-serif;
   --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --font-mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
 
-  /* Escala tipográfica. El piso del invariante 6 no se negocia. */
-  --fs-title:clamp(1.9rem,5.2vw,4.2rem);
-  --fs-h2:clamp(1.5rem,3.2vw,2.7rem);
-  --fs-h3:clamp(1.05rem,1.85vw,1.45rem);
-  --fs-body:clamp(0.95rem,1.55vw,1.4rem);
-  --fs-small:clamp(0.78rem,1.02vw,0.95rem);
-  --fs-micro:clamp(0.66rem,0.85vw,0.8rem);
+  /* Escala tipográfica. Piso absoluto del invariante 6 */
+  --fs-title:clamp(1.7rem,4.5vw,3.6rem);
+  --fs-h2:clamp(1.35rem,2.9vw,2.3rem);
+  --fs-h3:clamp(0.98rem,1.6vw,1.35rem);
+  --fs-body:clamp(0.88rem,1.35vw,1.22rem);
+  --fs-small:clamp(0.76rem,0.98vw,0.92rem);
+  --fs-micro:clamp(0.65rem,0.82vw,0.78rem);
+  --fs-code:clamp(0.74rem,1.05vw,0.95rem);
 
-  --pad:clamp(1.4rem,3.6vw,4rem);
-  --gap:clamp(0.55rem,1.35vw,1.35rem);
+  --pad:clamp(1.2rem,3vw,3.2rem);
+  --gap:clamp(0.45rem,1.1vw,1.1rem);
   --ease:cubic-bezier(.16,1,.3,1);
 }
 
@@ -79,226 +58,454 @@ html{height:100%;scroll-snap-type:y mandatory;scroll-behavior:smooth}
 body{
   height:100%;overflow-x:hidden;
   background:var(--bg);color:var(--fg);
-  font-family:var(--font-body);font-size:var(--fs-body);line-height:1.45;
+  font-family:var(--font-body);font-size:var(--fs-body);line-height:1.42;
   -webkit-font-smoothing:antialiased;
 }
-/* Invariante 6: piso absoluto de 22px reales a 1280x720 en adelante. */
 @media (min-width:1200px){body{font-size:max(22px,var(--fs-body))}}
 
-/* ---- Invariante 9: viewport fitting. Nunca hay scroll dentro de una slide ---- */
+/* Viewport Fitting (100vh / 100dvh): Cero scroll dentro de una slide */
 .slide{
   width:100vw;height:100vh;height:100dvh;overflow:hidden;
   padding:var(--pad) calc(var(--pad) + 1.6rem) calc(var(--pad) + 1.1rem) var(--pad);
   scroll-snap-align:start;
   display:flex;flex-direction:column;justify-content:center;gap:var(--gap);
   position:relative;
+  /* Retícula de consola de 58px */
+  background-image:
+    linear-gradient(rgba(43,245,208,.042) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(43,245,208,.042) 1px,transparent 1px);
+  background-size:58px 58px;
 }
 .slide > *{max-width:100%}
 
-/* Marcado institucional (invariante 7). Lo inyecta el JS en TODAS las slides. */
+/* Marcado institucional */
 .slide-footer{
-  position:absolute;left:var(--pad);right:var(--pad);bottom:calc(var(--pad)/2.2);
+  position:absolute;left:var(--pad);right:var(--pad);bottom:calc(var(--pad)/2.4);
   display:flex;justify-content:space-between;align-items:baseline;gap:1rem;
   font-family:var(--font-mono);
   font-size:var(--fs-micro);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
-  z-index:2;
 }
-.slide-footer .fb{color:var(--accent-deep)}
+.slide-footer .fb{color:var(--accent)}
 
-/* ---- Tipografía ---- */
-h1{font-family:var(--font-display);font-size:var(--fs-title);font-weight:700;
-   line-height:1.02;letter-spacing:-.03em;max-width:17ch}
-h1 em{font-style:normal;color:var(--peach)}   /* display: area grande, color original */
-h2{font-family:var(--font-display);font-size:var(--fs-h2);font-weight:700;
-   line-height:1.08;letter-spacing:-.022em;max-width:25ch}
-h2 em{font-style:normal;color:var(--accent-deep)}
+/* Tipografía */
+h1{font-family:var(--font-display);font-size:var(--fs-title);font-weight:800;
+   line-height:.98;letter-spacing:-.035em;text-transform:uppercase;max-width:18ch}
+h1 em{font-style:normal;color:var(--accent);text-shadow:0 0 28px rgba(43,245,208,.45)}
+h2{font-family:var(--font-display);font-size:var(--fs-h2);font-weight:800;
+   line-height:1.05;letter-spacing:-.03em;text-transform:uppercase}
 h3{font-family:var(--font-display);font-size:var(--fs-h3);font-weight:700;letter-spacing:-.01em}
-p{max-width:62ch}
-strong{color:var(--accent-deep);font-weight:700}
+p{max-width:68ch}
+strong{color:var(--accent);font-weight:700}
 .kicker{font-family:var(--font-mono);font-size:var(--fs-small);letter-spacing:.2em;
-  text-transform:uppercase;color:var(--accent-deep)}
-.kicker.pk{color:var(--peach-deep)}
-.lead{color:var(--muted);max-width:58ch}
-.claim{font-family:var(--font-display);font-weight:700;letter-spacing:-.03em;
-  font-size:clamp(1.5rem,4vw,3.3rem);line-height:1.06;max-width:24ch}
-.claim span{color:var(--peach)}
-.note{font-size:var(--fs-small);color:var(--muted);max-width:60ch}
-ul{list-style:none;display:flex;flex-direction:column;gap:.4em}
-ul li{padding-left:1.15em;position:relative;max-width:60ch}
-ul li::before{content:"";position:absolute;left:0;top:.62em;width:.5em;height:.5em;
-  border-radius:50%;background:var(--accent)}
-ul.peach li::before{background:var(--peach)}
+  text-transform:uppercase;color:var(--accent)}
+.lead{color:var(--muted);max-width:66ch}
+.rule{height:5px;width:clamp(80px,14vw,190px);background:var(--accent);flex:none;
+  box-shadow:0 0 24px rgba(43,245,208,.5)}
+.claim{font-family:var(--font-display);font-weight:800;letter-spacing:-.032em;
+  font-size:clamp(1.4rem,3.4vw,2.8rem);line-height:1.08;max-width:26ch}
+.claim span{color:var(--accent-2)}
+.term{font-family:var(--font-mono);font-size:.88em;background:var(--surface-2);
+  border:1px solid var(--line);padding:.02em .34em;border-radius:3px;color:var(--accent);
+  white-space:nowrap}
+.numeral{position:absolute;right:calc(var(--pad)/1.2);top:50%;transform:translateY(-50%);
+  font-family:var(--font-display);font-weight:800;font-size:clamp(6rem,20vw,18rem);line-height:1;
+  color:transparent;-webkit-text-stroke:2px var(--line);pointer-events:none;user-select:none;z-index:0}
+.slide > :not(.numeral):not(.slide-footer){position:relative;z-index:1}
 
-/* ---- Formas planas: el único ornamento del deck ---- */
-/* Capa de ornamento. Es contenedor de scroll propio: las formas sangran fuera del
-   lienzo a propósito y aquí se recortan, sin inflar el scrollHeight de la slide. */
-.deco{position:absolute;inset:0;overflow:hidden;z-index:0;pointer-events:none}
-.shape{position:absolute;pointer-events:none;z-index:0;user-select:none}
-.shape.circ{border-radius:50%}
-.shape.arch{border-radius:50% 50% 0 0}
-.shape.qtr{border-radius:100% 0 0 0}
-/* El pie va excluido a propósito: es `position:absolute` y esta regla lo
-   devolvía al flujo, dejándolo pegado bajo el contenido en vez de abajo. */
-.slide > :not(.deco):not(.slide-footer){position:relative;z-index:1}
+/* Portada */
+.cover{background-image:
+  radial-gradient(ellipse at 8% 12%,rgba(43,245,208,.20),transparent 52%),
+  radial-gradient(ellipse at 92% 88%,rgba(255,111,176,.14),transparent 50%),
+  linear-gradient(rgba(43,245,208,.042) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(43,245,208,.042) 1px,transparent 1px);
+  background-size:auto,auto,58px 58px,58px 58px}
+.cover .who{color:var(--muted);font-size:var(--fs-small);letter-spacing:.12em;text-transform:uppercase}
+.cover .who b{color:var(--fg);font-weight:600}
 
-/* ---- Portada ---- */
-.cover h1{max-width:20ch}
-.cover .meta{font-family:var(--font-mono);font-size:var(--fs-small);color:var(--muted);
-  letter-spacing:.1em;text-transform:uppercase}
+/* Listas */
+ul.bullets{list-style:none;display:flex;flex-direction:column;gap:clamp(.3rem,.8vh,.75rem)}
+ul.bullets li{display:block;max-width:66ch;padding-left:1.25em;text-indent:-1.25em}
+ul.bullets li::before{content:"";display:inline-block;width:.5em;height:.5em;margin-right:.7em;
+  background:var(--accent);transform:translateY(-.1em);box-shadow:0 0 10px rgba(43,245,208,.6)}
+ol.steps{list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:clamp(.25rem,.75vh,.65rem)}
+ol.steps li{counter-increment:s;display:block;max-width:68ch;padding-left:1.8em;text-indent:-1.8em}
+ol.steps li::before{content:counter(s,decimal-leading-zero);font-family:var(--font-mono);
+  color:var(--accent);font-size:.85em;display:inline-block;width:1.2em;margin-right:.9em}
 
-/* ---- Divisorias de bloque (invariante 3) ---- */
-.divider{justify-content:center}
-.divider .n{font-family:var(--font-display);font-weight:700;
-  font-size:clamp(4.5rem,15vw,12rem);line-height:.85;color:var(--surface-2);
-  letter-spacing:-.05em}
-.divider h2{font-size:clamp(1.8rem,4.4vw,3.2rem);max-width:20ch}
-.divider .band{width:clamp(80px,12vw,180px);height:8px;background:var(--accent)}
+/* Tarjetas */
+.cards{display:grid;gap:clamp(.4rem,.85vw,.9rem);
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))}
+.cards.c4{grid-template-columns:repeat(4,1fr)}
+.cards.c3{grid-template-columns:repeat(3,1fr)}
+.cards.c2{grid-template-columns:repeat(2,1fr)}
+.card{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--line);
+  border-radius:4px;padding:clamp(.45rem,.95vw,1rem);display:flex;flex-direction:column;
+  gap:.35em;min-width:0}
+.card.on{border-color:var(--accent);border-top-color:var(--accent);
+  box-shadow:0 0 0 1px rgba(43,245,208,.28),0 0 30px rgba(43,245,208,.10)}
+.card.warn{border-top-color:var(--no)}
+.card.good{border-top-color:var(--yes)}
+.card .k{font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.18em;
+  text-transform:uppercase;color:var(--accent)}
+.card.warn .k{color:var(--no)}
+.card p{font-size:clamp(.72rem,1vw,.94rem);color:var(--muted);line-height:1.32;max-width:none}
+.card p b{color:var(--fg)}
 
-/* ---- Tarjetas ---- */
-.cols{display:grid;gap:var(--gap)}
-.cols.c2{grid-template-columns:repeat(2,1fr)}
-.cols.c3{grid-template-columns:repeat(3,1fr)}
-.cols.c4{grid-template-columns:repeat(4,1fr)}
-.card{background:var(--surface);border:1px solid var(--line);
-  padding:clamp(.7rem,1.5vw,1.25rem);border-top:6px solid var(--accent);
-  display:flex;flex-direction:column;gap:.3em}
-.card.p{border-top-color:var(--peach)}
-.card.l{border-top-color:var(--lilac)}
-.card.s{border-top-color:var(--sand)}
-.card h3{color:var(--fg)}
-.card p{color:var(--muted);font-size:var(--fs-small);max-width:none}
-.card .tag{font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.16em;
-  text-transform:uppercase;color:var(--accent-deep)}
-.card.p .tag{color:var(--peach-deep)} .card.l .tag{color:var(--lilac)} .card.s .tag{color:var(--sand-deep)}
+/* Listas de contraste dentro de tarjetas */
+.contrast-list{list-style:none;display:flex;flex-direction:column;gap:0.4rem;margin-top:0.3rem}
+.contrast-list li{font-size:clamp(.72rem,1vw,.92rem);color:var(--muted);line-height:1.3}
+.contrast-list li b{color:var(--fg)}
 
-/* ---- Tabla ---- */
-table{border-collapse:collapse;width:100%;font-size:var(--fs-small)}
-th,td{text-align:left;padding:.45em .7em;border-bottom:1px solid var(--line);vertical-align:top}
-th{font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.14em;
-  text-transform:uppercase;color:var(--muted);font-weight:400}
-td.dim{font-family:var(--font-display);font-weight:700;color:var(--fg);white-space:nowrap}
-td.b{font-family:var(--font-mono);white-space:nowrap;color:var(--accent-deep)}
+/* Tablas */
+.table-wrap{flex:1;min-height:0;display:flex;align-items:center}
+table{width:100%;border-collapse:collapse;font-size:clamp(.7rem,1vw,.94rem);line-height:1.3}
+caption{caption-side:top;text-align:left;font-family:var(--font-mono);font-size:var(--fs-micro);
+  letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding-bottom:.5rem}
+th,td{border-bottom:1px solid var(--line);padding:clamp(.25rem,.6vw,.6rem) clamp(.3rem,.65vw,.7rem);
+  text-align:left;vertical-align:top}
+thead th{font-family:var(--font-mono);font-weight:500;font-size:.85em;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--accent);border-bottom:2px solid var(--accent)}
+tbody th{font-weight:700;color:var(--fg)}
+tbody th .mono,td .mono{font-family:var(--font-mono);font-size:.9em;color:var(--accent)}
+tbody tr.on td,tbody tr.on th{background:rgba(43,245,208,.08)}
+td em{font-style:normal;color:var(--muted)}
+td b{color:var(--fg)}
+td,tbody th{color:var(--muted)}
 
-/* ---- Escala de bandas ---- */
-.bands{display:flex;flex-direction:column;gap:.35rem}
-.band-row{display:grid;grid-template-columns:minmax(9ch,14ch) minmax(7ch,10ch) 1fr;
-  gap:.8rem;align-items:center;background:var(--surface);border:1px solid var(--line);
-  border-left:8px solid var(--accent);padding:.45em .8em}
-.band-row.b4{border-left-color:#4FA48F}
-.band-row.b3{border-left-color:var(--sand)}
-.band-row.b2{border-left-color:var(--peach)}
-.band-row.b1{border-left-color:#8E2F1B}
-.band-row .nm{font-family:var(--font-display);font-weight:700}
-.band-row .rg{font-family:var(--font-mono);color:var(--muted);font-size:var(--fs-small)}
-.band-row .ds{color:var(--muted);font-size:var(--fs-small)}
+/* Cita / Advertencia */
+.callout{border-left:4px solid var(--accent);background:var(--surface);border-radius:0 4px 4px 0;
+  padding:clamp(.45rem,1vw,.95rem) clamp(.7rem,1.4vw,1.25rem);max-width:70ch;color:var(--muted)}
+.callout.warn{border-left-color:var(--no)}
+.callout p{max-width:none;color:inherit;font-size:clamp(.74rem,1.02vw,1rem)}
+.callout p b{color:var(--fg)}
 
-/* ---- Caja de énfasis ---- */
-.box{background:var(--surface);border:1px solid var(--line);border-left:8px solid var(--peach);
-  padding:clamp(.7rem,1.5vw,1.2rem);display:flex;flex-direction:column;gap:.35em}
-.box.acc{border-left-color:var(--accent)}
-.box.lil{border-left-color:var(--lilac)}
-.box .q{font-family:var(--font-display);font-weight:700;font-size:clamp(1.05rem,2vw,1.6rem);
-  line-height:1.2;max-width:40ch}
-.box p{font-size:var(--fs-small);color:var(--muted)}
+/* Código (bloques 2 y 3) */
+pre{background:var(--code-bg);color:var(--code-fg);border-left:4px solid var(--accent);
+  border-radius:0 4px 4px 0;
+  padding:clamp(.45rem,1.1vw,1rem) clamp(.65rem,1.3vw,1.2rem);overflow:hidden;
+  font-family:var(--font-mono);font-size:var(--fs-code);line-height:1.42;max-width:min(100%,82ch)}
+pre code{font:inherit;color:inherit;background:none}
+pre .c{color:#6C78A0}
+pre .k{color:#7FB4FF}
+pre .s{color:#2BF5D0}
+pre .n{color:#FFC46B}
+pre .e{color:#FF6FB0}
 
-/* ---- Fórmula (texto, no bloque de código) ---- */
-.formula{font-family:var(--font-mono);font-size:clamp(1rem,2.4vw,2rem);
-  color:var(--lilac);letter-spacing:.01em;background:var(--surface);
-  border:1px dashed var(--lilac);padding:.6em .9em;display:inline-block}
+/* Divisorias de bloque */
+.divider .slide-footer{max-width:none}
+.divider{justify-content:center;gap:clamp(.4rem,1vw,1rem);background-image:
+  radial-gradient(circle at 16% 28%,rgba(43,245,208,.22),transparent 55%),
+  radial-gradient(circle at 84% 80%,rgba(255,111,176,.16),transparent 55%),
+  linear-gradient(rgba(43,245,208,.042) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(43,245,208,.042) 1px,transparent 1px);
+  background-size:auto,auto,58px 58px,58px 58px}
+.divider .n{font-family:var(--font-display);font-weight:800;line-height:.78;letter-spacing:-.05em;
+  font-size:clamp(4rem,15vw,12rem);color:transparent;-webkit-text-stroke:2px var(--accent);
+  opacity:.55}
+.divider h2{font-size:clamp(1.5rem,4.5vw,3.4rem);color:var(--accent)}
+.divider p{color:var(--muted);max-width:52ch}
 
-/* ---- Casillas del acta ---- */
-.cpn{display:inline-flex;gap:.3em;margin-left:.5em}
-.cpn span{font-family:var(--font-mono);font-size:var(--fs-small);border:1.5px solid var(--muted);
-  padding:.05em .45em;color:var(--muted)}
+/* ---- Componente Wireframe / Maqueta Ergonómica (Slide 5) ---- */
+.mockup-dashboard{
+  display:grid;
+  grid-template-columns:250px 1fr;
+  gap:clamp(.5rem,1vw,1rem);
+  flex:1;
+  min-height:0;
+  max-height:55vh;
+}
+.mockup-sidebar{
+  background:var(--surface);
+  border:1px solid var(--accent);
+  border-radius:6px;
+  padding:clamp(.6rem,1vw,1rem);
+  display:flex;
+  flex-direction:column;
+  gap:clamp(.4rem,.7vh,.65rem);
+  box-shadow:0 0 24px rgba(43,245,208,.08);
+}
+.mockup-sidebar .sb-title{
+  font-family:var(--font-mono);
+  font-size:var(--fs-micro);
+  color:var(--accent);
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  font-weight:700;
+  border-bottom:1px solid var(--line);
+  padding-bottom:.35rem;
+}
+.mockup-chip{
+  background:var(--surface-2);
+  border:1px solid var(--line);
+  border-radius:4px;
+  padding:.35rem .6rem;
+  font-family:var(--font-mono);
+  font-size:clamp(.72rem,.95vw,.86rem);
+  color:var(--muted);
+  display:flex;
+  align-items:center;
+  gap:.4rem;
+}
+.mockup-chip.on{
+  border-color:var(--accent);
+  color:var(--fg);
+  background:rgba(43,245,208,.07);
+}
+.mockup-sidebar .sb-note{
+  margin-top:auto;
+  font-size:clamp(.68rem,.85vw,.78rem);
+  color:var(--muted);
+  font-family:var(--font-mono);
+  border-top:1px dashed var(--line);
+  padding-top:.4rem;
+  line-height:1.35;
+}
+.mockup-canvas{
+  display:flex;
+  flex-direction:column;
+  gap:clamp(.4rem,.8vh,.75rem);
+  min-width:0;
+}
+.mockup-kpis{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:clamp(.4rem,.8vw,.8rem);
+}
+.mockup-kpi{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:5px;
+  padding:.45rem .8rem;
+  display:flex;
+  flex-direction:column;
+  gap:.2rem;
+}
+.mockup-kpi .kpi-lbl{
+  font-family:var(--font-mono);
+  font-size:var(--fs-micro);
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+.mockup-kpi .kpi-val{
+  font-family:var(--font-display);
+  font-weight:800;
+  font-size:clamp(1.1rem,1.8vw,1.6rem);
+  color:var(--accent);
+  line-height:1.1;
+}
+.mockup-kpi.warn .kpi-val{
+  color:var(--accent-2);
+}
+.mockup-kpi .kpi-ref{
+  font-size:clamp(.66rem,.8vw,.76rem);
+  color:var(--muted);
+}
+.mockup-charts{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:clamp(.4rem,.8vw,.8rem);
+  flex:1;
+  min-height:0;
+}
+.mockup-chart{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:5px;
+  padding:.5rem .75rem;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
+.mockup-chart .ch-title{
+  font-family:var(--font-mono);
+  font-size:clamp(.72rem,.9vw,.84rem);
+  font-weight:700;
+  color:var(--fg);
+}
+.mockup-chart .ch-sub{
+  font-size:clamp(.66rem,.8vw,.76rem);
+  color:var(--muted);
+}
+.mockup-chart .ch-vis{
+  height:clamp(45px,7vh,75px);
+  display:flex;
+  align-items:flex-end;
+  gap:4px;
+  padding-top:4px;
+}
+.mockup-insight{
+  background:rgba(43,245,208,.08);
+  border-left:4px solid var(--accent);
+  border-radius:0 4px 4px 0;
+  padding:.45rem .9rem;
+  font-size:clamp(.72rem,.95vw,.86rem);
+  color:var(--fg);
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+}
 
-/* ---- Navegación (invariante 1) ---- */
+/* Banner del ciclo reactivo (Slide 11) */
+.cycle-banner{
+  background:rgba(43,245,208,.08);
+  border:1px solid var(--accent);
+  border-radius:4px;
+  padding:.5rem 1rem;
+  font-family:var(--font-mono);
+  font-size:clamp(.72rem,.95vw,.86rem);
+  color:var(--fg);
+  box-shadow:0 0 20px rgba(43,245,208,.12);
+}
+.cycle-banner strong{color:var(--accent)}
+
+/* Encabezados de paneles para Slide 13 */
+.panels-header{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:clamp(.8rem,2vw,2rem);
+  margin-bottom:clamp(.2rem,.4vh,.4rem);
+}
+.panel-header-box{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:4px;
+  padding:.4rem .8rem;
+}
+.panel-header-box.sel{border-color:var(--accent)}
+.panel-header-box.warn{border-color:var(--accent-2)}
+.panel-header-box .ph-title{
+  font-family:var(--font-mono);
+  font-size:clamp(.74rem,.92vw,.86rem);
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--fg);
+}
+.panel-header-box.sel .ph-title{color:var(--accent)}
+.panel-header-box.warn .ph-title{color:var(--accent-2)}
+.panel-header-box .ph-sub{
+  font-size:clamp(.66rem,.82vw,.76rem);
+  color:var(--muted);
+  margin-top:.15rem;
+}
+
+/* Figuras SVG */
+.fig-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;width:100%}
+svg.fig{width:100%;height:auto;max-height:50vh;display:block}
+svg.fig .axis{stroke:var(--line);stroke-width:2}
+svg.fig .serie{fill:none;stroke:var(--accent);stroke-width:3}
+svg.fig .serie.b{stroke:var(--accent-2);stroke-dasharray:8 6}
+svg.fig .t{font-family:var(--font-mono);font-size:15px;fill:var(--muted)}
+svg.fig .note{font-family:var(--font-body);font-size:14px;fill:var(--muted)}
+svg.fig rect.pane{fill:var(--surface);stroke:var(--line);stroke-width:1.5;rx:5px}
+svg.fig rect.pane.sel{stroke:var(--accent);stroke-width:2}
+
+/* Navegación */
 .progress-bar{position:fixed;top:0;left:0;height:4px;width:0;background:var(--accent);
-  z-index:120;transition:width .3s var(--ease)}
+  z-index:120;transition:width .3s var(--ease);box-shadow:0 0 16px rgba(43,245,208,.7)}
 .nav-dots{position:fixed;right:clamp(.45rem,1.1vw,1rem);top:50%;transform:translateY(-50%);
-  display:flex;flex-direction:column;gap:clamp(3px,.45vh,6px);z-index:120}
+  display:flex;flex-direction:column;gap:clamp(3px,.4vh,6px);z-index:120}
 .nav-dots button{width:8px;height:8px;padding:0;border-radius:50%;border:1px solid var(--muted);
   background:transparent;cursor:pointer}
 .nav-dots button[aria-current="true"]{background:var(--accent);border-color:var(--accent);transform:scale(1.35)}
 .nav-dots button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .block-chip{position:fixed;top:clamp(.6rem,1.6vh,1.2rem);right:clamp(1.4rem,3vw,2.6rem);z-index:120;
   font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.18em;text-transform:uppercase;
-  color:var(--accent-ink);background:var(--accent);padding:.35em .8em}
+  color:var(--accent-ink);background:var(--accent);padding:.35em .8em;border-radius:2px}
 .block-chip[hidden]{display:none}
 
-/* Índice de slides (Esc) */
-.slide-index{position:fixed;inset:0;z-index:200;background:rgba(247,243,236,.98);
+/* Índice */
+.slide-index{position:fixed;inset:0;z-index:200;background:rgba(6,7,14,.98);
   padding:clamp(1.2rem,4vw,3rem);overflow:auto;display:none}
 .slide-index.open{display:block}
 .slide-index h2{margin-bottom:1rem;color:var(--accent)}
-.slide-index ol{list-style:none;columns:2;column-gap:2.5rem;font-size:clamp(.78rem,1.05vw,.95rem)}
+.slide-index ol{list-style:none;columns:2;column-gap:2.5rem;font-size:clamp(.76rem,1.02vw,.94rem)}
 .slide-index li{break-inside:avoid;margin-bottom:.35em}
 .slide-index button{background:none;border:0;color:var(--fg);font:inherit;text-align:left;
   cursor:pointer;padding:.15em 0;width:100%}
-.slide-index button:hover,.slide-index button:focus-visible{color:var(--peach-deep)}
+.slide-index button:hover,.slide-index button:focus-visible{color:var(--accent)}
 .slide-index .ix{font-family:var(--font-mono);color:var(--muted);margin-right:.6em}
-.slide-index .bk{color:var(--accent-deep);font-family:var(--font-mono);font-size:.8em;
-  letter-spacing:.16em;text-transform:uppercase;margin:1.2em 0 .4em;break-after:avoid}
+.slide-index .bk{color:var(--accent);font-family:var(--font-mono);font-size:.8em;
+  letter-spacing:.16em;text-transform:uppercase;margin:1.1em 0 .4em;break-after:avoid}
 
-/* ---- Animación de entrada: una sola, sobria ---- */
-.reveal{opacity:0;transform:translateY(16px);
-  transition:opacity .5s var(--ease),transform .5s var(--ease)}
+/* Animaciones */
+.reveal{opacity:0;transform:translateY(18px);
+  transition:opacity .45s var(--ease),transform .45s var(--ease)}
 .slide.in-view .reveal{opacity:1;transform:none}
 .slide.in-view .reveal:nth-child(1){transition-delay:.04s}
-.slide.in-view .reveal:nth-child(2){transition-delay:.10s}
-.slide.in-view .reveal:nth-child(3){transition-delay:.16s}
-.slide.in-view .reveal:nth-child(4){transition-delay:.22s}
-.slide.in-view .reveal:nth-child(5){transition-delay:.28s}
-.slide.in-view .reveal:nth-child(6){transition-delay:.34s}
+.slide.in-view .reveal:nth-child(2){transition-delay:.09s}
+.slide.in-view .reveal:nth-child(3){transition-delay:.14s}
+.slide.in-view .reveal:nth-child(4){transition-delay:.19s}
+.slide.in-view .reveal:nth-child(5){transition-delay:.24s}
+.slide.in-view .reveal:nth-child(6){transition-delay:.29s}
 
-/* ---- Breakpoints obligatorios de alto (invariante 9) ---- */
+/* Breakpoints */
 @media (max-height:700px){
-  :root{--pad:clamp(1rem,2.4vw,2rem);--gap:clamp(.4rem,1vw,.9rem)}
+  :root{--pad:clamp(.8rem,2vw,1.6rem);--gap:clamp(.3rem,.8vw,.7rem)}
+  .mockup-dashboard{max-height:50vh}
 }
 @media (max-height:600px){
-  :root{--fs-title:clamp(1.6rem,4.1vw,2.7rem);--fs-h2:clamp(1.2rem,2.8vw,2rem);
-        --fs-h3:clamp(.95rem,1.6vw,1.2rem)}
-  .divider .n{font-size:clamp(3rem,10vw,6rem)}
-  .deco{display:none}
+  :root{--fs-title:clamp(1.4rem,3.6vw,2.4rem);--fs-h2:clamp(1.15rem,2.5vw,1.8rem);
+        --fs-h3:clamp(.88rem,1.4vw,1.1rem)}
+  .numeral{display:none}
 }
 @media (max-height:500px){
-  :root{--fs-body:clamp(.9rem,1.3vw,1.1rem);--fs-small:clamp(.74rem,.95vw,.86rem)}
+  :root{--fs-body:clamp(.85rem,1.15vw,1rem);--fs-code:clamp(.68rem,.9vw,.82rem)}
   .nav-dots{display:none}
 }
 @media (max-width:900px){
-  .cols.c4{grid-template-columns:repeat(2,1fr)}
+  .cards.c4,.cards.c3{grid-template-columns:repeat(2,1fr)}
+  .mockup-dashboard{grid-template-columns:1fr}
 }
 @media (max-width:600px){
-  .cols.c4,.cols.c3,.cols.c2{grid-template-columns:1fr}
-  .band-row{grid-template-columns:1fr;gap:.15rem}
+  .cards.c4,.cards.c3,.cards.c2{grid-template-columns:1fr}
   .slide-index ol{columns:1}
 }
 
-/* ---- prefers-reduced-motion (invariante 9) ---- */
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{animation:none!important;transition:none!important}
   .reveal{opacity:1;transform:none}
 }
 
-/* ============================================================================
-   IMPRESIÓN A PDF (invariante 5) — idéntica en los 16 decks.
-   Una slide por página, horizontal, fondo claro, sin dots ni barra.
-   ========================================================================= */
+/* Piso tipográfico para proyector */
+@media (min-width:1200px){
+  caption{font-size:max(22px,var(--fs-micro))}
+  table{font-size:max(22px,clamp(.7rem,1vw,.94rem))}
+  thead th{font-size:max(22px,.85em)}
+  tbody th .mono,td .mono{font-size:max(22px,.9em)}
+  .term{font-size:max(22px,.88em)}
+  .card p{font-size:max(22px,clamp(.72rem,1vw,.94rem))}
+  .contrast-list li{font-size:max(22px,clamp(.72rem,1vw,.92rem))}
+}
+
+/* Hoja de Impresión a PDF */
 @media print{
   @page{size:landscape;margin:0}
-  :root{--bg:#fff;--surface:#fff;--surface-2:#ececec;--line:#c9c9c9;
-        --fg:#111;--muted:#444;--accent:#1F6B5D;--peach:#93381A;--lilac:#43357A;
-        --sand:#7E5C10;--accent-ink:#fff}
-  /* Las tres variantes de tinta NO se redefinen: sobre el blanco de la hoja
-     rinden 7,38 (menta), 7,44 (durazno) y 7,58 (arena), mejor que en pantalla. */
+  :root{--bg:#fff;--surface:#fff;--surface-2:#f0f0f4;--line:#c9c9d2;
+        --fg:#111;--muted:#444;--accent:#0A6E7A;--accent-2:#A8265F;--accent-ink:#fff;
+        --no:#A8265F;--yes:#0A6E7A;--code-bg:#f4f4f6;--code-fg:#111}
   html,body{height:auto;background:#fff!important;color:#111!important}
   .slide{height:100vh;page-break-after:always;break-after:page;
-    background:#fff!important;color:#111!important;
+    background:#fff!important;background-image:none!important;color:#111!important;
     -webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .deco{display:none!important}
-  .divider{border-top:8px solid #1F6B5D}
-  .divider .n{color:#d8d8d8}
-  .progress-bar,.nav-dots,.slide-index,.block-chip{display:none!important}
+  .cover{background:#fff!important;background-image:none!important}
+  h1 em{text-shadow:none!important}
+  .rule{box-shadow:none!important}
+  ul.bullets li::before{box-shadow:none!important}
+  .divider{background:#fff!important;background-image:none!important;border-top:8px solid #0A6E7A}
+  .divider h2{color:#111!important}
+  .divider .n{color:#111!important;-webkit-text-stroke:0;opacity:.14}
+  .divider p,.divider .kicker,.divider .slide-footer{color:#444!important}
+  .card.on{background:#E2F5F3!important;box-shadow:none!important}
+  .card.on p{color:#333!important}
+  pre{background:#f4f4f6!important;color:#111!important;border:1px solid #c9c9d2;
+    border-left:5px solid #0A6E7A}
+  pre .c{color:#666!important} pre .k{color:#0A3E9A!important} pre .s{color:#0A6E7A!important}
+  pre .n{color:#8A5A00!important} pre .e{color:#A8265F!important}
+  .term{color:#0A6E7A!important}
+  .progress-bar,.nav-dots,.slide-index,.block-chip,.numeral{display:none!important}
   .reveal{opacity:1!important;transform:none!important}
   *{animation:none!important;transition:none!important}
 }
@@ -317,314 +524,446 @@ td.b{font-family:var(--font-mono);white-space:nowrap;color:var(--accent-deep)}
 
 <main>
 
-<!-- ======================= PORTADA ======================= -->
+<!-- ======================= 1. PORTADA ======================= -->
 <section class="slide cover" data-title="Portada">
-  <div class="deco" aria-hidden="true">
-  <span class="shape circ" style="width:34vw;height:34vw;background:#D5E6E0;right:-7vw;top:-9vw"></span>
-  <span class="shape arch" style="width:15vw;height:22vw;background:#EFD3C4;left:-3vw;bottom:8vh"></span>
+  <p class="kicker reveal">Analítica de Datos &middot; Clase 10 &middot; Momento 2</p>
+  <div class="rule reveal"></div>
+  <h1 class="reveal">Visualización interactiva: <em>De la Narrativa Fija al Descubrimiento Autónomo</em></h1>
+  <p class="who reveal"><b>Julián Garzón</b> &middot; Ingeniería de Sistemas &middot; Universidad Cooperativa de Colombia</p>
+</section>
+
+<!-- ======================= 2. OBJETIVOS ======================= -->
+<section class="slide" data-title="Objetivos de la clase y Hook de Apertura">
+  <p class="kicker reveal">Del monólogo explicativo a la cabina de consulta en vivo</p>
+  <h2 class="reveal">Objetivos de la clase</h2>
+  <ol class="steps reveal">
+    <li><b>Diferenciar el rol del Dashboard Explicativo vs Exploratorio</b>, sabiendo cuándo persuadir con una ruta fija y cuándo entregar una cabina de interrogación.</li>
+    <li><b>Separar responsabilidades entre Plotly y Streamlit</b>, distinguiendo el motor que pinta el cuadro del framework reactivo que arma la galería.</li>
+    <li><b>Dominar el patrón arquitectónico de 6 pasos</b> y el ciclo reactivo de arriba a abajo ejecutado desde la terminal.</li>
+    <li><b>Implementar el estándar ergonómico 3/3/3</b> con guardas defensivas ante selecciones vacías y aceleración por caché.</li>
+    <li><b>Construir y auditar la app del dataset propio</b> que sustentarán formalmente en la Clase 11.</li>
+  </ol>
+  <p class="lead reveal">En la clase 9 cerramos la conclusión de un informe. Hoy entregamos una herramienta para que quien toma decisiones descubra sus propios hallazgos.</p>
+</section>
+
+<!-- ======================= 3. SÍNTESIS CONCEPTUAL ======================= -->
+<section class="slide" data-block="1" data-title="Dashboard Explicativo vs Exploratorio">
+  <p class="kicker reveal">Síntesis conceptual &middot; Dos filosofías de visualización</p>
+  <h2 class="reveal">Explicativo vs Exploratorio</h2>
+  <div class="cards c2 reveal">
+    <article class="card">
+      <span class="k">Clase 9 &middot; Storytelling</span>
+      <h3>Dashboard Explicativo</h3>
+      <p><b>Respuesta cerrada y secuencia lineal</b> para persuadir a la audiencia sobre una tesis ya demostrada.</p>
+      <ul class="contrast-list">
+        <li><b>Flujo:</b> Pregunta fija &rarr; Ruta predeterminada &rarr; Conclusión única.</li>
+        <li><b>Audiencia:</b> Espectador pasivo guiado por el autor del informe.</li>
+        <li><b>Soporte:</b> Reporte PDF, presentación ejecutiva o gráfico estático.</li>
+        <li><b>Propósito:</b> Respaldar una decisión ya tomada y evitar ambigüedades.</li>
+        <li><b>Límite crítico:</b> Pierde vigencia ante preguntas no anticipadas.</li>
+      </ul>
+    </article>
+
+    <article class="card on">
+      <span class="k">Clase 10 &middot; Streamlit + Plotly</span>
+      <h3>Dashboard Exploratorio</h3>
+      <p><b>Cabina interactiva de consulta</b> para interrogar hipótesis y descubrir patrones no previstos.</p>
+      <ul class="contrast-list">
+        <li><b>Flujo:</b> Hipótesis &harr; Controles reactivos &harr; Descubrimiento autónomo.</li>
+        <li><b>Audiencia:</b> Decisor / analista activo en control total de la vista.</li>
+        <li><b>Soporte:</b> Aplicación web reactiva con zoom, hover y filtros.</li>
+        <li><b>Propósito:</b> Detectar anomalías, contrastes y nuevas preguntas ad-hoc.</li>
+        <li><b>Ventaja clave:</b> Responde múltiples escenarios sobre el mismo lienzo.</li>
+      </ul>
+    </article>
   </div>
-  <p class="kicker reveal">Analítica de Datos · Clase 10 · Momento 2</p>
-  <h1 class="reveal">Laboratorio integrador:<br><em>ensayo del Momento 2</em></h1>
-  <p class="lead reveal">Hoy no hay nota. Hoy hay consecuencias. Cada equipo arma y ensaya su entrega en vivo, con la rúbrica real en la mano, delante de un compañero que la va a leer con usted.</p>
-  <p class="meta reveal">Julián Garzón · Ingeniería de Sistemas · Universidad Cooperativa de Colombia</p>
+  <div class="callout reveal"><p><strong>El cambio de fondo no es técnico, es de control:</strong> en el explicativo el autor elige qué se mira; en el exploratorio quien abre la app decide qué recorte interrogar.</p></div>
 </section>
 
-<!-- ======================= OBJETIVOS ======================= -->
-<section class="slide" data-title="Objetivos de la clase">
-  <p class="kicker reveal">Al terminar la clase, su equipo debe poder</p>
-  <h2 class="reveal">Cinco cosas, y todas se verifican hoy</h2>
-  <ul class="reveal">
-    <li><strong>Enunciar el mensaje central</strong> de su análisis en una frase, sin abrir el dashboard.</li>
-    <li><strong>Sostener la sustentación completa</strong> dentro del corte, con demo en vivo incluida.</li>
-    <li><strong>Anticipar tres preguntas</strong> del Q&amp;A y responderlas de pie.</li>
-    <li><strong>Autoevaluarse contra la rúbrica real</strong> e identificar en cuál de las tres dimensiones está más débil.</li>
-    <li><strong>Nombrar el modo de falla</strong> que más los amenaza y comprometerse a una acción antes de la clase 11.</li>
-  </ul>
-  <p class="note reveal">La salida obligatoria de hoy es un acta de feedback firmada por el equipo revisor. Un equipo sin acta es un equipo que no ensayó.</p>
-</section>
-
-<!-- ======================= DIVISORIA BLOQUE 1 ======================= -->
-<section class="slide divider" data-block="1" data-title="Divisoria · Bloque 1">
-  <div class="deco" aria-hidden="true">
-  <span class="shape circ" style="width:38vw;height:38vw;background:#D5E6E0;right:-9vw;bottom:-12vw"></span>
+<!-- ======================= 4. ANALOGÍA DEL AUTOMÓVIL ======================= -->
+<section class="slide" data-block="1" data-title="La Analogía del Automóvil">
+  <p class="kicker reveal">Ergonomía de información crítica &middot; El criterio de utilidad</p>
+  <h2 class="reveal">La Analogía del Automóvil</h2>
+  <p class="claim reveal">El velocímetro no muestra el histórico <span>por trimestre</span>.</p>
+  <p class="lead reveal">Tiene velocidad, combustible, temperatura y revoluciones. La información operativa indispensable para tomar las decisiones inmediatas de la conducción: acelerar, frenar, tanquear o apagar el motor.</p>
+  <div class="cards c2 reveal">
+    <article class="card on"><span class="k">Información Operativa</span><h3>Para decidir al volante</h3>
+      <p>Métricas directas con unidad física y anclas de alerta clara. <b>Si un indicador no cambia ninguna acción inmediata, no pertenece a la cabina principal.</b></p></article>
+    <article class="card warn"><span class="k">Sobrecarga y Distracción</span><h3>El costo de amontonar</h3>
+      <p>Diez relojes decorativos y gráficos densos roban la atención visual y provocan accidentes analíticos. <b>Un tablero se juzga por lo que dejó afuera.</b></p></article>
   </div>
-  <p class="n reveal">01</p>
-  <p class="kicker reveal">Bloque 1</p>
-  <h2 class="reveal">Qué se evalúa realmente</h2>
-  <div class="band reveal"></div>
-  <p class="lead reveal">La rúbrica que se proyecta hoy es exactamente la que se usa la próxima clase. No una versión resumida, no una paráfrasis.</p>
+  <div class="callout reveal"><p><strong>Criterio de utilidad profesional:</strong> responde una pregunta que alguien se hace de verdad, se comprende sin manual de instrucciones, ofrece filtros ortogonales y conduce siempre a una decisión informada.</p></div>
 </section>
 
-<section class="slide" data-block="1" data-title="Encuadre: hoy no hay nota, hoy hay consecuencias">
-  <div class="deco" aria-hidden="true">
-  <span class="shape qtr" style="width:20vw;height:20vw;background:#EFD3C4;right:0;top:0"></span>
-  </div>
-  <p class="kicker pk reveal">Encuadre</p>
-  <div class="box reveal">
-    <p class="q">Hoy no hay nota. Hoy hay consecuencias.</p>
-    <p>Lo que salga en el acta de su equipo lo voy a tener en la mano cuando los valore la próxima clase. Si aquí les dicen que su mensaje central no se entiende y llegan a la clase 11 con el mismo mensaje, eso ya no es un descubrimiento: es una decisión que ustedes tomaron.</p>
-  </div>
-  <p class="lead reveal">Ensayar hoy es barato: el único costo es descubrir delante de un compañero lo que no funciona. No ensayar es caro: lo mismo se descubre la próxima clase, cuando ya no hay tiempo de arreglarlo.</p>
-</section>
+<!-- ======================= 5. ANATOMÍA DE UN DASHBOARD ======================= -->
+<section class="slide" data-block="1" data-title="Anatomía de un Dashboard Exploratorio">
+  <p class="kicker reveal">Arquitectura ergonómica de la interfaz &middot; Cuatro zonas coordinadas</p>
+  <h2 class="reveal">Anatomía de un Dashboard Exploratorio</h2>
+  
+  <div class="mockup-dashboard reveal">
+    <!-- Barra Lateral (25%) -->
+    <div class="mockup-sidebar">
+      <div class="sb-title">Controles &middot; st.sidebar (25%)</div>
+      <div class="mockup-chip on"><span>&#9632;</span> 1. Categórico (Municipio)</div>
+      <div class="mockup-chip on"><span>&#9632;</span> 2. Dimensión (Tipo Partícula)</div>
+      <div class="mockup-chip on"><span>&#9632;</span> 3. Rango (Slider de Años)</div>
+      <div class="sb-note">
+        <strong>&circlearrowright; Recalculo reactivo:</strong><br>
+        Mover un control ejecuta el script de arriba a abajo y actualiza el lienzo.
+      </div>
+    </div>
 
-<section class="slide" data-block="1" data-title="Qué produce la clase 11">
-  <p class="kicker reveal">Antes de que lo pregunten</p>
-  <h2 class="reveal">La clase 11 <em>tampoco</em> tiene nota. Y aun así decide el semestre</h2>
-  <div class="cols c3 reveal">
-    <div class="card"><span class="tag">Momento 2</span><h3>Qué sale de la clase 11</h3><p>Tres bandas —Saber, Ser y Hacer— con su evidencia, qué falta para la banda siguiente, una acción por dimensión, y un reporte de cumplido / no cumplido. Ningún número.</p></div>
-    <div class="card p"><span class="tag">Habilitación</span><h3>Qué se juegan</h3><p>Sin cumplir el Momento 1 y el Momento 2 no hay Momento 3. Quedar en no cumplido inhabilita para la única evaluación calificada del curso.</p></div>
-    <div class="card l"><span class="tag">Momento 3</span><h3>Dónde está la nota</h3><p>La única nota del semestre es la del Momento 3, y esa nota es la nota del curso. No hay ponderación de momentos ni ninguna otra aritmética.</p></div>
-  </div>
-  <p class="note reveal">Cumplido significa: el equipo entregó y sustentó, y ninguna de las tres dimensiones quedó en la banda No aceptable. Presentarse siempre es mejor que no presentarse.</p>
-</section>
+    <!-- Lienzo Principal (75%) -->
+    <div class="mockup-canvas">
+      <!-- Fila 1: 3 KPIs -->
+      <div class="mockup-kpis">
+        <div class="mockup-kpi">
+          <span class="kpi-lbl">KPI 1 &middot; Promedio</span>
+          <span class="kpi-val">28,7 ug/m³</span>
+          <span class="kpi-ref">Guía OMS PM2.5: 15</span>
+        </div>
+        <div class="mockup-kpi warn">
+          <span class="kpi-lbl">KPI 2 &middot; Pico Máximo</span>
+          <span class="kpi-val">149,6 ug/m³</span>
+          <span class="kpi-ref">Umbral Crítico</span>
+        </div>
+        <div class="mockup-kpi">
+          <span class="kpi-lbl">KPI 3 &middot; Mediciones</span>
+          <span class="kpi-val">5.034</span>
+          <span class="kpi-ref">Muestras Filtradas</span>
+        </div>
+      </div>
 
-<section class="slide" data-block="1" data-title="Las tres dimensiones y qué mide cada una">
-  <p class="kicker reveal">El instrumento, y es el único del curso</p>
-  <h2 class="reveal">Saber, Ser y Hacer. <em>Las tres pesan lo mismo</em></h2>
-  <div class="cols c3 reveal">
-    <div class="card"><span class="tag">Saber</span><h3>Qué mide</h3><p>Si distinguen y justifican la técnica antes de aplicarla, no después.</p></div>
-    <div class="card p"><span class="tag">Ser</span><h3>Qué mide</h3><p>Cómo se comunica, qué se asume y qué se reconoce como límite. Aquí vive la narrativa.</p></div>
-    <div class="card l"><span class="tag">Hacer</span><h3>Qué mide</h3><p>Si ejecutan bien sobre datos reales: preparación, análisis, visualización y producto.</p></div>
-  </div>
-  <p class="lead reveal">Lo que más cambia el resultado y menos se cree: <strong>un dashboard impecable no compensa una presentación que solo enumera lo que se construyó.</strong> Esa presentación deja Ser en Aceptable como techo, y Ser vale un tercio.</p>
-</section>
+      <!-- Fila 2: 3 Gráficos coordinados -->
+      <div class="mockup-charts">
+        <div class="mockup-chart">
+          <div>
+            <div class="ch-title">1. Línea Temporal</div>
+            <div class="ch-sub">¿Hacia dónde va la tendencia?</div>
+          </div>
+          <div class="ch-vis">
+            <svg viewBox="0 0 100 40" style="width:100%;height:100%">
+              <path d="M 5,32 L 20,25 L 35,28 L 50,15 L 65,22 L 80,10 L 95,14" fill="none" stroke="#2BF5D0" stroke-width="2.5"/>
+            </svg>
+          </div>
+        </div>
+        <div class="mockup-chart">
+          <div>
+            <div class="ch-title">2. Barras por Grupo</div>
+            <div class="ch-sub">¿Dónde se concentra el impacto?</div>
+          </div>
+          <div class="ch-vis" style="justify-content:space-around">
+            <div style="width:18%;height:70%;background:#2BF5D0;border-radius:2px"></div>
+            <div style="width:18%;height:95%;background:#2BF5D0;border-radius:2px"></div>
+            <div style="width:18%;height:50%;background:#2BF5D0;border-radius:2px"></div>
+            <div style="width:18%;height:35%;background:#2BF5D0;border-radius:2px"></div>
+          </div>
+        </div>
+        <div class="mockup-chart">
+          <div>
+            <div class="ch-title">3. Boxplot de Dispersión</div>
+            <div class="ch-sub">¿Qué tan estable es la medida?</div>
+          </div>
+          <div class="ch-vis" style="justify-content:space-around;align-items:center">
+            <div style="width:24%;height:70%;border:1.5px solid #2BF5D0;background:rgba(43,245,208,.15);border-radius:2px;position:relative">
+              <div style="position:absolute;top:45%;left:0;right:0;height:2px;background:#fff"></div>
+            </div>
+            <div style="width:24%;height:55%;border:1.5px solid #FF6FB0;background:rgba(255,111,176,.15);border-radius:2px;position:relative">
+              <div style="position:absolute;top:40%;left:0;right:0;height:2px;background:#fff"></div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-<section class="slide" data-block="1" data-title="Qué elementos mira cada dimensión en el Momento 2">
-  <p class="kicker reveal">Elementos, no criterios</p>
-  <h2 class="reveal">Dónde miro para ubicar cada banda</h2>
-  <table class="reveal">
-    <tr><th>Dimensión</th><th>Qué miro dentro de ella en el Momento 2</th></tr>
-    <tr><td class="dim">Saber</td><td>Aplicación de la estadística descriptiva</td></tr>
-    <tr><td class="dim">Ser</td><td>Narrativa y storytelling · Insights y recomendaciones · Sustentación y manejo del tiempo</td></tr>
-    <tr><td class="dim">Hacer</td><td>Preparación de datos · Análisis bivariado y multivariado · Visualización · Dashboard interactivo</td></tr>
-  </table>
-  <p class="note reveal">Son elementos, no criterios con porcentaje: no se puntúan por separado, no se promedian y no se suman. Alimentan un solo juicio, el de la banda de su dimensión.</p>
-</section>
-
-<section class="slide" data-block="1" data-title="Las cinco bandas">
-  <p class="kicker reveal">La escala, y son cinco nombres, solo esos</p>
-  <h2 class="reveal">Una banda por dimensión</h2>
-  <div class="bands reveal">
-    <div class="band-row"><span class="nm">Excelente</span><span class="rg">4.3 – 5.0</span><span class="ds">Supera lo esperado. Hay decisiones justificadas, no solo ejecutadas</span></div>
-    <div class="band-row b4"><span class="nm">Bueno</span><span class="rg">3.8 – 4.2</span><span class="ds">Cumple todo con solvencia. Faltan matices, no faltan piezas</span></div>
-    <div class="band-row b3"><span class="nm">Aceptable</span><span class="rg">3.0 – 3.7</span><span class="ds">Cumple el mínimo. Hay vacíos visibles pero la base está</span></div>
-    <div class="band-row b2"><span class="nm">Insuficiente</span><span class="rg">1.8 – 2.9</span><span class="ds">Faltan elementos importantes. Enumera y describe, no relaciona</span></div>
-    <div class="band-row b1"><span class="nm">No aceptable</span><span class="rg">1.0 – 1.7</span><span class="ds">Ausente o fundamentalmente equivocado</span></div>
-  </div>
-  <p class="note reveal">Estos números valen como nota únicamente en el Momento 3. En la clase 11 el equipo recibe el nombre de la banda, y nada más.</p>
-</section>
-
-<section class="slide" data-block="1" data-title="Topes por omisión y banderas rojas">
-  <p class="kicker pk reveal">Lo que pone techo y lo que hunde</p>
-  <h2 class="reveal">Ningún tope resta. <em>Todos ponen techo</em></h2>
-  <div class="cols c2 reveal">
-    <div class="card p"><span class="tag">Topes por omisión</span><h3>Le ponen un techo a una dimensión</h3><p>Sin análisis de correlación, Hacer no pasa de Insuficiente. Sin heatmap, Hacer no pasa de Aceptable. Estadísticos calculados pero no interpretados, Saber no pasa de Aceptable. No se acumulan: manda el más bajo.</p></div>
-    <div class="card l"><span class="tag">Banderas rojas</span><h3>Hunden la dimensión afectada</h3><p>Dataset sin procedencia verificable o sintético presentado como real, menos de tres preguntas de investigación, contenido copiado, integrante ausente sin aviso. Dejan esa dimensión en Insuficiente o inferior. Plagio: cero automático en el momento completo.</p></div>
-  </div>
-  <p class="note reveal">Los topes actúan sobre la banda de una dimensión, nunca sobre las tres, y nunca restan bandas.</p>
-</section>
-
-<section class="slide" data-block="1" data-title="Los mínimos del entregable">
-  <p class="kicker reveal">Reglas del curso, no de la rúbrica</p>
-  <h2 class="reveal">Lo que no se negocia en el Momento 2</h2>
-  <div class="cols c3 reveal">
-    <div class="card"><span class="tag">Dashboard</span><h3>3 filtros · 3 KPIs · 3 gráficos</h3><p>Menos de eso no es un dashboard incompleto: es un dashboard ausente.</p></div>
-    <div class="card p"><span class="tag">Demo</span><h3>En vivo, obligatoria</h3><p>Con capturas de respaldo entregadas de antemano. Una falla técnica con respaldo declarado no cuesta banda; no tener respaldo, sí.</p></div>
-    <div class="card l"><span class="tag">Formato</span><h3>El mismo de los tres momentos</h3><p>Exposición, preguntas y transición, con corte duro. Idéntico en las clases 6, 11 y 14.</p></div>
-  </div>
-  <p class="note reveal">Ambos integrantes hablan. La participación de los dos se valora en Ser, y el Q&amp;A puede ir a cualquiera de los dos.</p>
-</section>
-
-<section class="slide" data-block="1" data-title="Modos de falla 1 y 2">
-  <p class="kicker pk reveal">Los cuatro modos de falla · observados el semestre pasado</p>
-  <h2 class="reveal">Análisis superficial y dependencia de la herramienta</h2>
-  <div class="cols c2 reveal">
-    <div class="card p"><span class="tag">Modo 1</span><h3>Análisis superficial</h3>
-      <p><strong>Se ve así:</strong> se describen los gráficos en vez de interpretarlos. "Aquí vemos que el estrato 3 es el más alto." Ningún porqué, ninguna comparación, ninguna recomendación.</p>
-      <p><strong>Antídoto:</strong> por cada gráfico, obligarse a decir en voz alta "y esto significa que…". Si no sale la frase, el gráfico sobra.</p></div>
-    <div class="card p"><span class="tag">Modo 2</span><h3>Dependencia de la herramienta</h3>
-      <p><strong>Se ve así:</strong> la presentación se cae cuando Streamlit se cae. El equipo se queda mudo esperando que cargue.</p>
-      <p><strong>Antídoto:</strong> capturas de respaldo preparadas de antemano y declaradas. El mensaje se sostiene sin la app.</p></div>
+      <!-- Fila 3: Insight dinámico -->
+      <div class="mockup-insight">
+        <strong>💡 Insight Dinámico (st.info):</strong>
+        <span>Dosquebradas y Santa Rosa empatan en niveles críticos de PM10 mientras La Virginia carece de sensor PM2.5.</span>
+      </div>
+    </div>
   </div>
 </section>
 
-<section class="slide" data-block="1" data-title="Modos de falla 3 y 4">
-  <p class="kicker pk reveal">Los cuatro modos de falla · observados el semestre pasado</p>
-  <h2 class="reveal">Mala gestión del tiempo y ausencia de mensaje central</h2>
-  <div class="cols c2 reveal">
-    <div class="card p"><span class="tag">Modo 3</span><h3>Mala gestión del tiempo</h3>
-      <p><strong>Se ve así:</strong> todo el turno en contexto y en "cómo limpiamos los datos", y los hallazgos comprimidos al final, hablando rápido.</p>
-      <p><strong>Causa:</strong> se presenta en el orden en que se trabajó, no en el orden en que se debe escuchar.</p>
-      <p><strong>Antídoto:</strong> presupuesto escrito y ensayado en voz alta de principio a fin. El contexto es lo primero que se recorta.</p></div>
-    <div class="card p"><span class="tag">Modo 4</span><h3>Ausencia de mensaje central</h3>
-      <p><strong>Se ve así:</strong> al terminar, nadie del público sabría resumir en una frase qué encontró el equipo. Hubo datos, hubo gráficos, no hubo tesis.</p>
-      <p><strong>Antídoto:</strong> escribir la frase antes de armar las diapositivas, y repetirla al abrir y al cerrar.</p></div>
+<!-- ======================= 6. EL MÍNIMO 3/3/3 ======================= -->
+<section class="slide" data-block="1" data-title="El Mínimo 3/3/3 y el Techo de 5">
+  <p class="kicker reveal">Especificación de diseño ergonómico &middot; Estándar de evaluación</p>
+  <h2 class="reveal">El Mínimo 3/3/3 y el Techo de 5</h2>
+  <div class="cards c3 reveal">
+    <article class="card on"><span class="k">3 Filtros</span><h3>Ortogonales y Reales</h3>
+      <p>Al menos uno categórico y uno de rango temporal o numérico. <b>Distintos entre sí:</b> dos filtros que expresan la misma partición cuentan como uno solo.</p></article>
+    <article class="card on"><span class="k">3 KPIs</span><h3>Cifras con Ancla</h3>
+      <p>Números destacados con unidad física obligatoria y marco de referencia del dominio. <b>Deben recalcularse obligatoriamente al mover los controles.</b></p></article>
+    <article class="card on"><span class="k">3 Gráficos</span><h3>Tres Preguntas Distintas</h3>
+      <p>Cada figura aborda un ángulo complementario: evolución temporal, comparación entre grupos y dispersión. Tres versiones de lo mismo se penalizan.</p></article>
   </div>
+  <div class="callout warn reveal"><p><strong>El Techo de 5:</strong> más de cinco filtros o más de cinco gráficos satura la cognición del decisor. <b>La principal competencia evaluada es elegir qué omitir.</b> Si necesita seis controles, está intentando empaquetar dos aplicaciones diferentes.</p></div>
 </section>
 
-<section class="slide" data-block="1" data-title="Resumen del bloque 1">
-  <div class="deco" aria-hidden="true">
-  <span class="shape circ" style="width:30vw;height:30vw;background:#E4DCF2;right:-8vw;top:-8vw"></span>
+<!-- ======================= 7. ROBUSTEZ: CACHÉ Y GUARDAS ======================= -->
+<section class="slide" data-block="1" data-title="Robustez de la Interfaz: Caché y Guardas">
+  <p class="kicker reveal">Integridad de ejecución y rendimiento en memoria</p>
+  <h2 class="reveal">Robustez: Caché y Guardas Preventivas</h2>
+  <div class="cards c2 reveal">
+    <article class="card on"><span class="k">Caché Inteligente</span><h3>Acelerar con <span class="term">@st.cache_data</span></h3>
+      <p>El ciclo reactivo de Streamlit vuelve a leer el script de punta a punta ante cada interacción. <b>Sin caché, el archivo de datos se relee y limpia en cada clic.</b> La directiva almacena en RAM el resultado inmutable de la carga inicial.</p></article>
+    <article class="card warn"><span class="k">Guardas Defensivas</span><h3>Protección con <span class="term">st.stop()</span></h3>
+      <p>Si el usuario desmarca todas las casillas de un multiselect, el subconjunto filtrado queda con cero filas. <b>Se valida la condición vacía con una advertencia limpia</b> en pantalla y se frena antes de que las figuras estallen.</p></article>
   </div>
-  <p class="kicker reveal">Cierre del bloque 1</p>
-  <p class="claim reveal">Los cuatro modos de falla son reparables antes de la clase 11.<br><span>Ninguno se repara la noche anterior.</span></p>
-  <p class="lead reveal">Por eso el ensayo va hoy y no el domingo: lo que se descubre hoy todavía tiene semana por delante para arreglarse.</p>
+  <div class="callout reveal"><p><strong>Invariante de calidad técnica:</strong> una aplicación profesional jamás le muestra una traza de error rojo de Python a un tomador de decisiones. Maneja los estados límite de forma elegante y previsible.</p></div>
 </section>
 
-<!-- ======================= DIVISORIA BLOQUE 2 ======================= -->
+<!-- ======================= 8. DIRECCIÓN TÉCNICA Y AUDITORÍA DE IA ======================= -->
+<section class="slide" data-block="1" data-title="Dirección Técnica y Auditoría de IA">
+  <p class="kicker reveal">Puente con Clase 3 &middot; El criterio no se pide prestado</p>
+  <h2 class="reveal">Auditoría de IA: Criterio sobre Sintaxis</h2>
+  <p class="claim reveal">Una IA entrega un tablero en segundos. <span>Saber si sirve es lo que evaluamos.</span></p>
+  <div class="cards c2 reveal">
+    <article class="card"><span class="k">El Método (Clase 3)</span><h3>Especificar &middot; Planear &middot; Ejecutar &middot; Validar</h3>
+      <p>La IA acelera la escritura de widgets y la maqueta visual, pero <b>inventa filtros redundantes, KPIs vacíos y gráficos desalineados</b> si no se le dirige con rigor técnico.</p></article>
+    <article class="card on"><span class="k">El Criterio (Clase 10)</span><h3>Las 4 Preguntas del Analista</h3>
+      <p>¿El número tiene <b>sentido</b>? ¿La <b>forma</b> del recorte cuadra? ¿Responde a la <b>pregunta</b> formulada? ¿<b>Cambia</b> el indicador al mover el control? Tocando la app se detecta si es robusta.</p></article>
+  </div>
+  <div class="callout reveal"><p><strong>La IA genera código; el ingeniero aporta el criterio analítico.</strong> Hoy aprendemos a redactar las especificaciones del encargo y a rechazar cualquier resultado que no cumpla con los estándares de negocio.</p></div>
+</section>
+
+<!-- ======================= 9. DIVISORIA BLOQUE 2 ======================= -->
 <section class="slide divider" data-block="2" data-title="Divisoria · Bloque 2">
-  <div class="deco" aria-hidden="true">
-  <span class="shape arch" style="width:22vw;height:30vw;background:#EFD3C4;right:6vw;bottom:0"></span>
+  <span class="n">02</span>
+  <p class="kicker">Bloque dos</p>
+  <h2>Demostración Guiada &middot; Herramientas y Reactividad</h2>
+  <p>De la biblioteca gráfica a la aplicación web. El ciclo reactivo de Streamlit, la terminal de comandos y el caso real de calidad del aire en Risaralda.</p>
+</section>
+
+<!-- ======================= 10. LA GALERÍA Y EL CUADRO ======================= -->
+<section class="slide" data-block="2" data-title="La Galería y el Cuadro: Plotly vs Streamlit">
+  <p class="kicker reveal">División de responsabilidades técnicas</p>
+  <h2 class="reveal">La Galería y el Cuadro: Plotly vs Streamlit</h2>
+  <p class="claim reveal">Plotly pinta los cuadros. <span>Streamlit construye la galería.</span></p>
+  <div class="table-wrap reveal">
+    <table>
+      <caption>Dos herramientas con roles complementarios &middot; Cero solapamiento</caption>
+      <thead><tr><th scope="col">Dimensión</th><th scope="col">Plotly (plotly.express)</th><th scope="col">Streamlit (streamlit)</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Naturaleza</th><td>Biblioteca de visualización interactiva</td><td>Framework para aplicaciones analíticas en navegador</td></tr>
+        <tr class="on"><th scope="row">Qué produce</th><td><b>Figuras dinámicas:</b> hover, zoom, tooltips y leyendas activas</td><td><b>Interfaz web completa:</b> widgets laterales, columnas y métricas</td></tr>
+        <tr><th scope="row">Entorno</th><td>Incrustado en celdas de Jupyter o dentro de una app</td><td>Servidor web local ejecutado en un proceso propio</td></tr>
+        <tr><th scope="row">A quién releva</th><td>A Matplotlib y Seaborn cuando hace falta explorar</td><td>A nada anterior: es el contenedor reactivo del análisis</td></tr>
+      </tbody>
+    </table>
   </div>
-  <p class="n reveal">02</p>
-  <p class="kicker reveal">Bloque 2</p>
-  <h2 class="reveal">Sustentación de ejemplo, valorada en voz alta</h2>
-  <div class="band reveal"></div>
-  <p class="lead reveal">Primero se sustenta en serio. Después se valora en público, con la rúbrica proyectada y señalando dónde falló el que sustentó.</p>
+  <p class="lead reveal">Matplotlib sigue siendo óptimo para informes impresos estáticos; Plotly gana cuando el usuario necesita inspeccionar y filtrar por sí mismo.</p>
 </section>
 
-<section class="slide" data-block="2" data-title="Qué van a ver: el estándar, no una parodia">
-  <p class="kicker reveal">Antes de empezar</p>
-  <h2 class="reveal">Esto es lo que estoy pidiendo. <em>No es un ideal inalcanzable</em></h2>
-  <ul class="reveal">
-    <li>Sustentación completa de un dashboard de ejemplo, dentro del turno real y con demo en vivo.</li>
-    <li>Los cinco bloques dentro del turno: contexto, preparación de datos, visualizaciones clave, hallazgos, insights y plan de ML.</li>
-    <li>Preguntas hostiles después, hechas por el salón o por mí mismo.</li>
-  </ul>
-  <div class="box acc reveal">
-    <p class="q">No van a ver una parodia de mala sustentación.</p>
-    <p>Van a ver el estándar bien ejecutado, con uno o dos errores sutiles adentro. Lo que hace que el formato quepa no es hablar rápido: es el guion.</p>
+<!-- ======================= 11. PATRÓN ARQUITECTÓNICO ======================= -->
+<section class="slide" data-block="2" data-title="El Patrón Arquitectónico de 6 Pasos">
+  <p class="kicker reveal">Estructura estándar de la aplicación &middot; Secuencia y ciclo reactivo</p>
+  <h2 class="reveal">El Patrón Arquitectónico de 6 Pasos</h2>
+  
+  <div class="cards c3 reveal">
+    <article class="card">
+      <span class="k">Paso 1</span>
+      <h3>Configuración de Página</h3>
+      <p><span class="term">st.set_page_config</span><br>
+      Define el título de la pestaña y aprovecha el ancho completo de la ventana del navegador.</p>
+    </article>
+
+    <article class="card on">
+      <span class="k">Paso 2</span>
+      <h3>Carga &amp; Caché en RAM</h3>
+      <p><span class="term">@st.cache_data</span><br>
+      Lee el CSV, tipifica fechas y descarta outliers. Persiste en memoria para evitar recargas lentas.</p>
+    </article>
+
+    <article class="card">
+      <span class="k">Paso 3</span>
+      <h3>Controles en Barra Lateral</h3>
+      <p><span class="term">st.sidebar (filtros)</span><br>
+      Captura las elecciones del usuario y produce el subconjunto filtrado para el lienzo.</p>
+    </article>
+
+    <article class="card warn">
+      <span class="k">Paso 4</span>
+      <h3>Guardas Defensivas</h3>
+      <p><span class="term">if df.empty: st.stop()</span><br>
+      Si el usuario desmarca todo, advierte con <span class="term">st.warning</span> y frena limpiamente antes del crash.</p>
+    </article>
+
+    <article class="card">
+      <span class="k">Paso 5</span>
+      <h3>KPIs Reactivos</h3>
+      <p><span class="term">st.columns &middot; st.metric</span><br>
+      Calcula promedio, pico y conteo de muestras con unidades y anclas del dominio.</p>
+    </article>
+
+    <article class="card on">
+      <span class="k">Paso 6</span>
+      <h3>Gráficos &amp; Insight</h3>
+      <p><span class="term">st.plotly_chart</span><br>
+      Renderiza los 3 gráficos interactivos y cierra con la síntesis del hallazgo actual.</p>
+    </article>
+  </div>
+
+  <div class="cycle-banner reveal">
+    <strong>&circlearrowright; Ciclo Reactivo:</strong> Cualquier cambio en los controles reinicia el script completo de arriba a abajo, recalculando el lienzo con datos frescos sin releer el CSV gracias a la caché.
   </div>
 </section>
 
-<section class="slide" data-block="2" data-title="Evidencia primero, banda después">
-  <p class="kicker reveal">Cómo se valora, y el orden importa</p>
-  <h2 class="reveal">Primero se escribe la evidencia. <em>Solo después se marca la banda</em></h2>
-  <div class="cols c3 reveal">
-    <div class="card"><span class="tag">Paso 1</span><h3>La evidencia concreta</h3><p>Qué frase, qué gráfico, qué momento. Escrito, antes de decidir nada.</p></div>
-    <div class="card p"><span class="tag">Paso 2</span><h3>La banda</h3><p>Una por dimensión. Tres bandas por equipo, no ocho puntajes.</p></div>
-    <div class="card l"><span class="tag">Paso 3</span><h3>Qué faltó</h3><p>Qué habría tenido que pasar para subir a la banda siguiente.</p></div>
+<!-- ======================= 12. CICLO REACTIVO Y ENTORNO ======================= -->
+<section class="slide" data-block="2" data-title="El Ciclo Reactivo y el Entorno de Ejecución">
+  <p class="kicker reveal">De Jupyter a la Terminal &middot; Servidor web local y puertos</p>
+  <h2 class="reveal">El Ciclo de Vida en Terminal y Red Local</h2>
+  <div class="cards c3 reveal">
+    <article class="card on"><span class="k">El Modelo Reactivo</span><h3>Ejecución Completa</h3>
+      <p>Streamlit no utiliza callbacks fragmentados: ante cada clic del usuario, <b>vuelve a ejecutar el script entero</b> desde la línea 1 conservando el nuevo estado de los widgets.</p></article>
+    <article class="card"><span class="k">Arranque en Terminal</span><h3>Proceso Autónomo</h3>
+      <p>Ya no se ejecuta con el botón de play del editor. Se lanza con <span class="term">streamlit run app.py</span>. Se detiene con <span class="term">Ctrl+C</span> en la consola: cerrar la pestaña no lo apaga.</p></article>
+    <article class="card warn"><span class="k">Puertos y Red</span><h3>localhost:8501</h3>
+      <p>El servidor atiende en su propia máquina sin internet. Si el puerto 8501 está ocupado por una sesión previa, se reasigna ágilmente con <span class="term">--server.port 8502</span>.</p></article>
   </div>
-  <p class="lead reveal">Es la contramedida contra el efecto halo, que con solo tres bandas por equipo es el sesgo que más daño hace. <strong>Una presentación pulida sube Ser y no toca Saber ni Hacer.</strong></p>
+  <pre class="reveal"><code><span class="c"># Comando canónico de lanzamiento desde la carpeta del proyecto</span>
+<span class="k">streamlit</span> run app.py <span class="s">--server.port</span> <span class="n">8501</span></code></pre>
 </section>
 
-<section class="slide" data-block="2" data-title="La única cuenta del semestre">
-  <p class="kicker reveal">Se hace una vez, en voz alta, con mis propias bandas</p>
-  <h2 class="reveal">Toda la aritmética del curso cabe en una línea</h2>
-  <p class="formula reveal">Nota del Momento 3 = (Saber + Ser + Hacer) / 3</p>
-  <p class="lead reveal">Y no hay paso siguiente: <strong>la nota final del curso es la nota del Momento 3.</strong> Los momentos 1 y 2 no entran en ninguna cuenta porque no producen número; producen bandas, evidencia y habilitación.</p>
-  <p class="note reveal">Verla hecha una sola vez desactiva la pregunta de "¿y cuánto saco?", que si no aparece diez veces.</p>
-</section>
+<!-- ======================= 13. LIMPIEZA Y DOMINIO ======================= -->
+<section class="slide" data-block="2" data-title="Limpieza y Dominio: Outliers en Risaralda">
+  <p class="kicker reveal">El impacto destructivo de los valores extremos en la escala</p>
+  <h2 class="reveal">Limpieza y Dominio: El Caso Risaralda</h2>
 
-<section class="slide" data-block="2" data-title="El grupo revalora: calibrar el ojo">
-  <p class="kicker reveal">Antes de que revisen a un compañero</p>
-  <h2 class="reveal">Ahora valoran ustedes. <em>Tres bandas, y la evidencia de cada una</em></h2>
-  <ul class="peach reveal">
-    <li>Una banda para Saber, una para Ser y una para Hacer, sobre la sustentación que acaban de ver.</li>
-    <li>Cuando dos personas den bandas distintas, la pregunta no es quién tiene razón: es <strong>qué viste que te llevó a esa banda</strong>.</li>
-    <li>El feedback entre pares solo sirve si el par sabe qué está mirando. Esto es lo que lo entrena.</li>
-  </ul>
-  <div class="box reveal"><p class="q">Una presentación pulida pero superficial no debe superar a una rigurosa pero áspera.</p></div>
-</section>
-
-<!-- ======================= DIVISORIA BLOQUE 3 ======================= -->
-<section class="slide divider" data-block="3" data-title="Divisoria · Bloque 3">
-  <div class="deco" aria-hidden="true">
-  <span class="shape circ" style="width:40vw;height:40vw;background:#E4DCF2;left:-12vw;bottom:-14vw"></span>
+  <!-- Encabezados descriptivos claros fuera del SVG -->
+  <div class="panels-header reveal">
+    <div class="panel-header-box warn">
+      <div class="ph-title">1 &middot; Con Datos Crudos (Eje Y hasta 410 ug/m³)</div>
+      <div class="ph-sub">4 mediciones extremas de Dosquebradas (hasta 45.839) aplastan las series históricas contra el suelo.</div>
+    </div>
+    <div class="panel-header-box sel">
+      <div class="ph-title">2 &middot; Con Limpieza de Dominio (Eje Y hasta 60 ug/m³)</div>
+      <div class="ph-sub">Filtro 0 &lt; valor &le; 500: Sólida = PM10, Discontinua = PM2.5. Emerge nítida la tendencia real descendente.</div>
+    </div>
   </div>
-  <p class="n reveal">03</p>
-  <p class="kicker reveal">Bloque 3</p>
-  <h2 class="reveal">Ensayo, feedback entre pares y clínica</h2>
-  <div class="band reveal"></div>
-  <p class="lead reveal">Es el corazón de la clase y lo que más tiempo ocupa. Si algo se desborda antes, se recorta antes: esto no se toca.</p>
+
+  <div class="fig-wrap reveal">
+    <svg class="fig" viewBox="0 0 1000 230" role="img" aria-label="Dos paneles con el promedio anual de material particulado entre 2007 y 2023 en Risaralda. A la izquierda, datos crudos con eje hasta 410 ug/m3. A la derecha, datos limpios con eje hasta 60 ug/m3.">
+      <!-- Panel izquierdo: eje 0 a 410 -->
+      <rect class="pane" x="10" y="10" width="470" height="210" rx="6"></rect>
+      <path class="axis" d="M 60 25 L 60 185 L 450 185"></path>
+      <text class="t" x="22" y="32">410</text>
+      <text class="t" x="38" y="188">0</text>
+      <text class="t" x="52" y="206">2007</text>
+      <text class="t" x="415" y="206">2023</text>
+      <path class="serie" d="M 60,178 L 84,177 L 108,180 L 131,181 L 155,182 L 179,179 L 202,180 L 226,182 L 250,183 L 274,181 L 298,186 L 321,189 L 345,191 L 369,188 L 392,189 L 416,188 L 440,187"></path>
+      <path class="serie b" d="M 179,180 L 202,179"></path>
+      <path class="serie b" d="M 321,175 L 345,177 L 369,176 L 392,180 L 416,178 L 440,32"></path>
+
+      <!-- Panel derecho: eje 0 a 60 -->
+      <rect class="pane sel" x="520" y="10" width="470" height="210" rx="6"></rect>
+      <path class="axis" d="M 570 25 L 570 185 L 960 185"></path>
+      <text class="t" x="538" y="32">60</text>
+      <text class="t" x="546" y="188">0</text>
+      <text class="t" x="562" y="206">2007</text>
+      <text class="t" x="925" y="206">2023</text>
+      <path class="serie" d="M 570,82 L 593,81 L 616,98 L 639,100 L 662,106 L 685,93 L 708,96 L 731,110 L 754,113 L 777,104 L 800,127 L 823,140 L 846,155 L 869,140 L 892,145 L 915,137 L 945,134"></path>
+      <path class="serie b" d="M 685,166 L 708,162"></path>
+      <path class="serie b" d="M 823,119 L 846,136 L 869,171 L 892,168 L 915,157 L 945,159"></path>
+    </svg>
+  </div>
+  <p class="lead reveal">Un valor atípico absurdo aplasta la escala visual completa y vuelve ciega la herramienta. <strong>La limpieza técnica define si el dashboard informa o engaña.</strong></p>
 </section>
 
-<section class="slide" data-block="3" data-title="Cómo funciona la ronda">
-  <p class="kicker reveal">Organización</p>
-  <h2 class="reveal">Cada equipo sustenta ante otro equipo, y después se rota</h2>
-  <div class="cols c4 reveal">
-    <div class="card"><span class="tag">Parejas</span><h3>Dominios distintos</h3><p>Nunca se emparejan equipos con datasets del mismo dominio: el revisor debe escuchar con oído de público no experto.</p></div>
-    <div class="card p"><span class="tag">Turno</span><h3>Sustentación sin interrupciones</h3><p>Después vienen las preguntas, y al final se llena y se firma el acta.</p></div>
-    <div class="card l"><span class="tag">El corte</span><h3>Lo lleva el revisor</h3><p>No el revisado. Dos avisos y corte, exactamente como en la clase 11.</p></div>
-    <div class="card s"><span class="tag">Rotación</span><h3>Dos actas por equipo</h3><p>De revisores distintos. Si dos revisores independientes señalan lo mismo, ya no es opinión.</p></div>
+<!-- ======================= 14. DIVISORIA BLOQUE 3 ======================= -->
+<section class="slide divider" data-block="3" data-title="Laboratorio con IA · Tu Dashboard Exploratorio">
+  <span class="n">03</span>
+  <p class="kicker">Bloque tres</p>
+  <h2>Laboratorio con IA &middot; Tu Dashboard Exploratorio</h2>
+  <p>Construcción asistida en formato libre: Claude Artifacts, HTML interactivo o Streamlit.</p>
+</section>
+
+<!-- ======================= 15. ESPECIFICACIONES DEL RETO ======================= -->
+<section class="slide" data-block="3" data-title="Construir un Dashboard Dinámico con IA">
+  <p class="kicker reveal">Consigna de exploración con IA &middot; Cero fricción de entorno</p>
+  <h2 class="reveal">Construir un Dashboard Dinámico con IA</h2>
+  <div class="cards c3 reveal">
+    <article class="card on">
+      <span class="k">Formato Libre con IA</span>
+      <h3>Cero Fricción</h3>
+      <p>Claude Artifacts (React/HTML), HTML/JS autocontenido o Streamlit. Elige la herramienta que te dé cero fricción técnica.</p>
+    </article>
+    <article class="card good">
+      <span class="k">Requisitos de Interacción</span>
+      <h3>Estándar 3 &times; 3 &times; 3</h3>
+      <p>Mínimo 3 filtros funcionales que cambien la vista, 3 KPIs reactivos en cabecera y 3 gráficos complementarios.</p>
+    </article>
+    <article class="card">
+      <span class="k">Foco en Descubrimiento</span>
+      <h3>Preguntas Nuevas</h3>
+      <p>El dashboard no es una foto fija; debe permitir hacer preguntas nuevas y descubrir patrones no evidentes al filtrar.</p>
+    </article>
+  </div>
+  <div class="callout reveal">
+    <p><strong>Habilidad evaluada:</strong> la competencia clave no es teclear código a mano, sino dirigir a la IA con una especificación rigurosa y auditar la interactividad real.</p>
   </div>
 </section>
 
-<section class="slide" data-block="3" data-title="Cómo se llena el acta">
-  <p class="kicker reveal">El acta está organizada como la rúbrica real</p>
-  <h2 class="reveal">Tres filas, una por dimensión. <em>Marca y evidencia</em></h2>
-  <table class="reveal">
-    <tr><th>Dimensión</th><th>Marca del revisor</th><th>Y escribe</th></tr>
-    <tr><td class="dim">Saber</td><td class="b">C · P · N</td><td>Qué escuchó que lo llevó ahí</td></tr>
-    <tr><td class="dim">Ser</td><td class="b">C · P · N</td><td>Qué escuchó que lo llevó ahí</td></tr>
-    <tr><td class="dim">Hacer</td><td class="b">C · P · N</td><td>Qué vio que lo llevó ahí</td></tr>
-  </table>
-  <p class="lead reveal">Cumple, Cumple parcialmente, No cumple. <strong>La evidencia es obligatoria:</strong> una marca sin evidencia escrita es un acta inservible y se devuelve.</p>
-  <p class="note reveal">El revisor no pone bandas ni notas. Marca, describe y señala. La banda la pongo yo en la clase 11, y allá tampoco hay nota.</p>
-</section>
-
-<section class="slide" data-block="3" data-title="Reglas del feedback">
-  <p class="kicker pk reveal">Cuatro reglas, y se sostienen</p>
-  <h2 class="reveal">Cómo se da feedback que sirva</h2>
-  <ul class="peach reveal">
-    <li><strong>Se critica el trabajo, nunca a quien lo presenta.</strong> Un tono personal corta la ronda de inmediato.</li>
-    <li><strong>Nada de elogio mutuo.</strong> Un acta con todo en Cumple y sin evidencia escrita le cuesta bandas a un compañero la semana siguiente, y esas bandas son la nota de la clase 14.</li>
-    <li><strong>Mínimo un "ojalá" concreto por acta.</strong> Algo que el equipo revisado pueda cambiar antes de la próxima clase.</li>
-    <li><strong>Hoy no se programa.</strong> Portátil abierto para sustentar, no para arreglar el código. El desarrollo es tarea de la semana.</li>
-  </ul>
-</section>
-
-<section class="slide" data-block="3" data-title="La rotación y la corrección aplicada">
-  <p class="kicker reveal">Entre la primera ronda y la segunda</p>
-  <h2 class="reveal">Aplique al menos una corrección. <em>Y que quede escrito</em></h2>
-  <div class="box acc reveal">
-    <p class="q">El feedback que no se aplica no es feedback: es un comentario.</p>
-    <p>Al rotar, el equipo revisado elige una corrección del acta anterior y la aplica en la ronda siguiente. El nuevo revisor anota si lo hizo. Es la diferencia entre salir de aquí con dos hojas y salir con una versión mejor.</p>
+<!-- ======================= 16. AUDITORÍA Y DEMOSTRACIÓN ======================= -->
+<section class="slide" data-block="3" data-title="Demostración y Validación de Hallazgos">
+  <p class="kicker reveal">Prueba en vivo &middot; Presentación relámpago</p>
+  <h2 class="reveal">Demostración y Validación de Hallazgos</h2>
+  <div class="cards c3 reveal">
+    <article class="card on">
+      <span class="k">Paso 1 &middot; En Pantalla</span>
+      <h3>Demostración en Pantalla</h3>
+      <p>Abre tu dashboard dinámico directamente en Claude Artifacts, en el navegador o en la terminal local.</p>
+    </article>
+    <article class="card warn">
+      <span class="k">Paso 2 &middot; Interacción</span>
+      <h3>Prueba de Filtros</h3>
+      <p>Mueve los controles frente a un compañero o al salón: la interfaz debe responder y recalcular en tiempo real sin quebrarse.</p>
+    </article>
+    <article class="card good">
+      <span class="k">Paso 3 &middot; Descubrimiento</span>
+      <h3>El Hallazgo</h3>
+      <p>Explica en una frase: <i>&ldquo;&iquest;Qué descubriste al cruzar estas dos variables que antes no sabías?&rdquo;</i>. La clave es el valor analítico.</p>
+    </article>
   </div>
-  <p class="lead reveal">Si su dashboard todavía no está terminado, ensaye igual y con más razón. Lo que se prueba hoy no es el código: es si usted puede sostener el turno y dejar un mensaje. Eso se ensaya con un dashboard a medias; lo que no se puede es improvisarlo el día de la evaluación.</p>
-</section>
-
-<section class="slide" data-block="3" data-title="La clínica: tres preguntas">
-  <p class="kicker reveal">Clínica equipo por equipo</p>
-  <h2 class="reveal">Les voy a hacer tres preguntas, siempre las mismas</h2>
-  <div class="cols c3 reveal">
-    <div class="card"><span class="tag">Uno</span><h3>El dataset</h3><p>¿Alcanza para lo que están prometiendo? ¿El snapshot está versionado y corre sin internet?</p></div>
-    <div class="card p"><span class="tag">Dos</span><h3>Los gráficos</h3><p>¿Cada gráfico responde una pregunta? ¿Hay alguno que sobre? ¿Falta el heatmap de correlación o el análisis de correlación?</p></div>
-    <div class="card l"><span class="tag">Tres</span><h3>El mensaje central</h3><p>Dígamelo sin el dashboard a la vista. Sujeto, verbo y consecuencia. Si no sale limpia, la escribimos ahí mismo, en el acta.</p></div>
+  <div class="callout reveal">
+    <p><strong>Criterio de éxito:</strong> si al interactuar con los filtros los indicadores reaccionan de inmediato y revelan una respuesta analítica clara, el dashboard cumple su propósito.</p>
   </div>
-  <p class="note reveal">Si su dashboard necesita internet para arrancar, es frágil para la clase 11, y eso se descubre hoy.</p>
 </section>
 
-<section class="slide" data-block="3" data-title="Salida obligatoria de la clase">
-  <p class="kicker reveal">Con qué se sale de aquí</p>
-  <h2 class="reveal">Un acta firmada por equipo revisor. <em>Idealmente dos</em></h2>
-  <ul class="reveal">
-    <li>Las tres dimensiones marcadas <span class="cpn"><span>C</span><span>P</span><span>N</span></span> con su evidencia escrita.</li>
-    <li>El tiempo real medido en el ensayo, escrito en el acta.</li>
-    <li>Las tres preguntas que le hizo el revisor, y qué respondió.</li>
-    <li>Al menos un compromiso concreto, leído en voz alta al firmar. Compromiso que no se dice en voz alta, no se cumple.</li>
-  </ul>
-  <p class="note reveal">Me llevo copia de todas. Los hallazgos entran a la valoración de la clase 11.</p>
-</section>
-
-<!-- ======================= CIERRE ======================= -->
-<section class="slide" data-title="Cierre">
-  <div class="deco" aria-hidden="true">
-  <span class="shape circ" style="width:36vw;height:36vw;background:#D5E6E0;right:-10vw;bottom:-12vw"></span>
+<!-- ======================= 17. SÍNTESIS DE LA SESIÓN ======================= -->
+<section class="slide" data-block="4" data-title="Síntesis de la Sesión">
+  <p class="kicker reveal">Bloque cuatro &middot; Cierre conceptual</p>
+  <h2 class="reveal">El Dashboard como Instrumento de Decisión</h2>
+  <p class="claim reveal">El dashboard no es una vitrina.<br><span>Es un instrumento de decisión.</span></p>
+  <div class="cards c2 reveal">
+    <article class="card on"><span class="k">Autonomía</span><h3>Preguntas Anticipadas</h3>
+      <p>Cada control es una hipótesis que usted anticipó para facultar a la organización a consultar los datos y descubrir patrones por cuenta propia.</p></article>
+    <article class="card good"><span class="k">Rigor Técnico</span><h3>Arquitectura y Resiliencia</h3>
+      <p>El patrón de 6 pasos, la memoria en caché y las guardas defensivas garantizan que la cabina resista el escrutinio de usuarios exigentes en producción local.</p></article>
   </div>
-  <p class="kicker reveal">Nos vemos en la clase 11</p>
-  <p class="claim reveal">Ensayar aquí es barato.<br><span>No ensayar es caro, y se paga la próxima clase.</span></p>
-  <p class="lead reveal">Traigan aplicado lo que dice el acta. Si dos revisores independientes les dijeron lo mismo y llega igual, eso ya no es un descubrimiento del evaluador: es una decisión del equipo, y pesa en Ser.</p>
+  <div class="callout reveal"><p><strong>De la visualización al impacto:</strong> una gráfica muestra lo que ocurrió; una cabina interactiva permite evaluar qué ocurriría bajo distintas condiciones de decisión.</p></div>
+</section>
+
+<!-- ======================= 18. PUENTE A LA EVALUACIÓN M2 ======================= -->
+<section class="slide" data-block="4" data-title="Puente Hacia la Evaluación del Momento 2">
+  <p class="kicker reveal">Sustentación oficial en Clase 11 &middot; Evaluación formal</p>
+  <h2 class="reveal">Sustentación Oficial del Momento 2</h2>
+  <div class="cards c3 reveal">
+    <article class="card on"><span class="k">Exposición Combinada</span><h3>Storytelling + Demo en Vivo</h3>
+      <p>Cada equipo presentará una defensa integrada: síntesis ejecutiva del problema de negocio seguida de demostración en tiempo real manipulando controles y revelando hallazgos.</p></article>
+    <article class="card warn"><span class="k">Interrogación Técnica</span><h3>Auditoría de Decisiones</h3>
+      <p>Ronda de preguntas del profesor: justificación de métricas elegidas, defensa del tratamiento de outliers y prueba de estrés de controles en vivo.</p></article>
+    <article class="card good"><span class="k">Corte Disciplinado</span><h3>Rotación Sistemática</h3>
+      <p>Turnos rigurosamente estructurados por equipo con transición inmediata. La sesión opera con estricto corte profesional para evaluar a todo el curso.</p></article>
+  </div>
+  <div class="callout reveal"><p><strong>Indicación imperativa:</strong> llegue a la Clase 11 con la aplicación ejecutándose localmente en su máquina. No se sustentan intenciones ni código estático: se evalúa la cabina analítica operando en vivo.</p></div>
 </section>
 
 </main>
 
 <script>
 /* ============================================================================
-   CONTROLADOR DE DIAPOSITIVAS (invariante 1)
-   Mismos atajos y misma navegación en las 15 clases del curso.
-   Flechas / espacio avanzan y retroceden · Home y End · Esc abre el índice ·
-   swipe táctil · rueda del ratón.
+   CONTROLADOR DE DIAPOSITIVAS (Invariante 1)
+   Navegación unificada: flechas / espacio / swipe táctil / rueda / Esc (índice)
    ========================================================================= */
 class SlidePresentation {
   constructor(root){
@@ -634,12 +973,11 @@ class SlidePresentation {
     this.dotsNav = document.querySelector('.nav-dots');
     this.chip = document.querySelector('.block-chip');
     this.index = document.querySelector('.slide-index');
-    /* La clase 10 conserva los tres bloques del contrato, con su reparto propio.
-       Los nombres son los de esta clase, no los genéricos. */
     this.blockNames = {
-      '1':'Bloque 1 · Qué se evalúa realmente',
-      '2':'Bloque 2 · Sustentación de ejemplo',
-      '3':'Bloque 3 · Ensayo, feedback y clínica'
+      '1': 'Bloque 1 · Teoría y Fundamentos',
+      '2': 'Bloque 2 · Demo y Herramientas',
+      '3': 'Bloque 3 · Reto Práctico Capstone',
+      '4': 'Bloque 4 · Cierre y Evaluación'
     };
 
     this.buildFooters();
@@ -651,15 +989,13 @@ class SlidePresentation {
     this.sync();
   }
 
-  /* Invariante 7: el marcado institucional va en el pie de TODAS las slides.
-     Se inyecta desde aquí para que no pueda faltar en ninguna. */
   buildFooters(){
     this.slides.forEach(s => {
       const f = document.createElement('p');
       f.className = 'slide-footer';
       const b = s.dataset.block;
       f.innerHTML = '<span>Analítica de Datos · Clase 10 · M2</span>' +
-        (b ? '<span class="fb">Bloque ' + b + '</span>' : '');
+        (b ? '<span class="fb">Bloque ' + b + '</span>' : '<span class="fb">Apertura</span>');
       s.appendChild(f);
     });
   }
@@ -683,7 +1019,7 @@ class SlidePresentation {
       if (b !== lastBlock){
         const h = document.createElement('li');
         h.className = 'bk';
-        h.textContent = b ? this.blockNames[b] : (k === 0 ? 'Apertura' : 'Cierre');
+        h.textContent = b ? (this.blockNames[b] || ('Bloque ' + b)) : (k === 0 ? 'Apertura' : 'Cierre');
         ol.appendChild(h);
         lastBlock = b;
       }
