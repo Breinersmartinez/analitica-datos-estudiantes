@@ -1,0 +1,39 @@
+lamina,cifra,pitch,recalculado,coincide,procedimiento
+1,Ventas totales de la cadena (millones),18.6,18.591,si,sum(Item_Outlet_Sales) / 1e6
+1,Ventas de OUT019 + OUT010 (miles),368.0,368.034,si,sum(ventas) donde Outlet_Type = Grocery Store
+1,Peso de las dos tiendas de barrio en ventas (%),2.0,1.98,si,ventas abarrotes / ventas totales x 100
+1,Productos distintos,1559.0,1559.0,si,nunique(Item_Identifier)
+2,DRL01 en OUT019 (ventas),935.0,934.783,si,Item_Outlet_Sales de la fila DRL01 x OUT019
+2,DRL01 en OUT049 (ventas),6300.0,6309.787,si,Item_Outlet_Sales de la fila DRL01 x OUT049 (el pitch dice 'mas de 6.300')
+2,DRL01 precio OUT019,233.0,232.996,si,Item_MRP
+2,DRL01 precio OUT049,235.0,235.396,si,Item_MRP
+2,DRL01 vitrina OUT019 (%),13.5,13.512,si,Item_Visibility x 100
+2,DRL01 vitrina OUT049 (%),7.7,7.729,si,Item_Visibility x 100
+3,Productos vendidos en ambos formatos,898.0,898.0,si,interseccion de Item_Identifier entre abarrotes y Tipo 1
+3,Productos que venden mas en Tipo 1 (%),100.0,100.0,si,share de productos con venta media Tipo 1 > venta media abarrotes
+3,Producto tipico vende N veces mas,7.5,7.5,si,"mediana, sobre los 898 productos, de (venta media en Tipo 1) / (venta media en abarrotes)"
+3,"Misma ciudad, Nivel 1 (OUT019 vs OUT046 y OUT049)",7.3,7.25,si,"igual que arriba, pero solo contra los supermercados de la misma ciudad"
+3,"Misma ciudad, Nivel 3 (OUT010 vs OUT013, OUT018 y OUT027)",8.5,8.5,si,"igual que arriba, pero solo contra los supermercados de la misma ciudad"
+4,Productos comunes OUT019 y OUT046,308.0,308.0,si,interseccion de Item_Identifier
+4,OUT046 vende N veces mas por producto,7.0,7.0,si,mediana de ventas OUT046 / ventas OUT019 en los 308 productos comunes
+4,Venta por producto OUT019,340.0,340.33,si,mean(ventas) por tienda
+4,Rango inferior supermercados Tipo 1 con tamano,2278.0,2277.844,si,min de mean(ventas) en Tipo 1 con Outlet_Size registrado
+4,Rango superior supermercados Tipo 1 con tamano,2439.0,2438.842,si,max de mean(ventas) en Tipo 1 con Outlet_Size registrado
+4,Productos en OUT046,930.0,930.0,si,filas de OUT046
+4,Productos en OUT019,528.0,528.0,si,filas de OUT019
+5,"Vitrina por producto, abarrotes (%)",10.8,10.796,si,mean(vitrina) en abarrotes
+5,"Vitrina por producto, supermercados (%)",6.5,6.492,si,mean(vitrina) en los tres tipos de supermercado
+5,Razon de vitrina,1.7,1.663,si,cociente de las dos medias
+5,"Venta por producto, supermercados (los tres tipos)",2449.0,2449.34,si,"mean(ventas) en Tipo 1, 2 y 3 juntos (no solo Tipo 1)"
+5,Ventas extra con +100 % de vitrina (porcentaje de la cadena),0.0,-0.086,si,coef de vitrina (OLS con efecto de tienda y precio) x vitrina adicional de las filas de abarrotes / ventas totales x 100. Reproduce 'cercano a cero'; no se conoce la especificacion exacta del pitch
+5,"Correlacion vitrina-ventas, supermercados",0.0,-0.014,si,Pearson entre vitrina y ventas dentro del grupo ('practicamente nula')
+5,"Correlacion vitrina-ventas, abarrotes",0.0,0.018,si,Pearson entre vitrina y ventas dentro del grupo ('practicamente nula')
+6,Menos que vende cada producto en tienda de barrio,1976.0,1976.353,si,mean(ventas Tipo 1) - mean(ventas abarrotes)
+6,Productos entre las dos tiendas,1083.0,1083.0,si,filas de abarrotes
+6,Brecha anual (millones),2.1,2.14,si,brecha por producto x 1.083 filas
+6,Brecha como % de las ventas de la cadena,11.5,11.513,si,brecha / ventas totales x 100
+6,Brecha a 3 anos (millones),6.4,6.421,si,"brecha x 3: supone que se repite igual cada ano, sin crecimiento ni descuento"
+6,Brecha a 5 anos (millones),10.7,10.702,si,"brecha x 5, mismos supuestos"
+7,Piloto x1.5 (miles al ano),90.0,89.847,si,ventas anuales de OUT019 x (factor - 1)
+7,Piloto x2 (miles al ano),180.0,179.694,si,ventas anuales de OUT019 x (factor - 1)
+7,Piloto x3 (miles al ano),359.0,359.388,si,ventas anuales de OUT019 x (factor - 1)

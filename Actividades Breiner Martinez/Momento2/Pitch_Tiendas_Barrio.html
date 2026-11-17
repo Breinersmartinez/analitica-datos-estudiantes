@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pitch tiendas de barrio</title>
+<style>
+:root {
+  --amarillo: #F5C518;
+  --negro: #0D0D0D;
+  --superficie: #1A1A1A;
+  --superficie-alta: #2E2E2E;
+  --blanco: #FFFFFF;
+  --gris: #A8A8A8;
+  --gris-oscuro: #333333;
+  --apagado-amarillo: rgb(13 13 13 / 0.2);
+  --apagado-negro: #5E7C72;
+  --verde: #3EB489;
+  --rejilla: #262626;
+  --radio: 6px;
+  --radio-marca: 4px;
+  --shadow: 0 1px 4px rgb(0 0 0 / 0.08);
+  --shadow-hover: 0 3px 10px rgb(0 0 0 / 0.12);
+  --fuente: Arial, "Helvetica Neue", Helvetica, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--negro); font-family: var(--fuente); overflow: hidden; }
+
+/* El escenario se diseña a 1920 x 1080 y se escala para llenar la pantalla */
+.escenario {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1920px;
+  height: 1080px;
+  transform-origin: center center;
+  font-variant-numeric: tabular-nums;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  padding: 96px 128px 72px;
+  background: var(--negro);
+  color: var(--blanco);
+}
+.slide.activa { display: flex; }
+.slide.amarilla { background: var(--amarillo); color: var(--negro); }
+
+.antetitulo {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--amarillo);
+}
+.amarilla .antetitulo { color: var(--negro); }
+
+.titulo {
+  margin: 24px 0 0;
+  font-size: 64px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.amarilla .titulo { font-size: 80px; line-height: 1.1; }
+
+.fuente {
+  margin: auto 0 0;
+  padding-top: 32px;
+  font-size: 19px;
+  line-height: 1.5;
+  color: var(--gris);
+  max-width: 1500px;
+}
+.amarilla .fuente { color: var(--gris-oscuro); }
+
+.contador {
+  position: absolute;
+  right: 128px;
+  bottom: 72px;
+  margin: 0;
+  font-size: 19px;
+  color: var(--gris);
+  pointer-events: none;
+}
+.contador.sobre-amarillo { color: var(--gris-oscuro); }
+
+/* Tarjetas informativas (tipo A) */
+.tarjeta {
+  background: var(--superficie);
+  border-radius: var(--radio);
+  padding: 32px;
+  transition: transform 400ms ease-out;
+}
+@media (hover: hover) and (pointer: fine) { .tarjeta:hover { transform: translateY(-0.75px); } }
+
+.dato { display: flex; flex-direction: column; gap: 8px; }
+.dato-numero { font-size: 72px; font-weight: 700; line-height: 1; color: var(--amarillo); }
+.dato-etiqueta { font-size: 24px; line-height: 1.4; color: var(--gris); }
+.dato-etiqueta b { color: var(--blanco); font-weight: 700; }
+
+/* Barras horizontales hechas con HTML */
+.barras { display: flex; flex-direction: column; gap: 20px; }
+.barra-fila { display: grid; grid-template-columns: 380px 1fr; column-gap: 32px; align-items: center; }
+.barra-nombre { font-size: 28px; font-weight: 700; line-height: 1.25; }
+.barra-nombre small { display: block; font-size: 21px; font-weight: 400; color: var(--gris); }
+.barra-pista { display: flex; align-items: center; gap: 20px; }
+.barra { height: 64px; border-radius: var(--radio-marca); background: var(--apagado-negro); flex: none; }
+.barra.protagonista { background: var(--amarillo); }
+.barra-valor { font-size: 44px; font-weight: 700; white-space: nowrap; }
+
+/* Control segmentado */
+.segmentado {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--superficie);
+  border-radius: var(--radio);
+}
+.segmentado button {
+  min-height: 64px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: calc(var(--radio) - 4px);
+  background: transparent;
+  color: var(--gris);
+  font: inherit;
+  font-size: 26px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 400ms ease-out, color 400ms ease-out;
+}
+@media (hover: hover) and (pointer: fine) { .segmentado button:hover { color: var(--blanco); } }
+.segmentado button[aria-checked="true"] {
+  background: var(--superficie-alta);
+  color: var(--blanco);
+  font-weight: 700;
+  box-shadow: var(--shadow);
+}
+.segmentado button:active { transition-duration: 100ms; background: var(--superficie-alta); }
+:is(button):focus-visible { outline: 2px solid var(--amarillo); outline-offset: 2px; }
+.control-etiqueta { font-size: 24px; color: var(--gris); margin: 0 0 12px; }
+
+/* Slide 1 */
+.contexto { margin: 24px 0 0; font-size: 30px; line-height: 1.5; color: var(--gris-oscuro); }
+.grafico-1 {
+  margin-top: 56px;
+  display: grid;
+  grid-template-columns: 150px 1fr 340px;
+  column-gap: 32px;
+  row-gap: 24px;
+  align-items: center;
+}
+.fila-etiqueta { font-size: 30px; font-weight: 700; }
+.barra-apilada { display: flex; gap: 2px; height: 64px; }
+.segmento { flex-basis: 0; min-width: 2px; border-radius: var(--radio-marca); background: var(--apagado-amarillo); }
+.segmento.barrio { background: var(--negro); }
+.valor { display: flex; align-items: baseline; gap: 16px; }
+.valor-numero { font-size: 72px; font-weight: 700; line-height: 1; }
+.valor-nota { font-size: 24px; line-height: 1.3; color: var(--gris-oscuro); }
+.leyenda { grid-column: 2 / 3; display: flex; gap: 32px; font-size: 22px; color: var(--gris-oscuro); }
+.leyenda span { display: inline-flex; align-items: center; gap: 10px; }
+.leyenda i { width: 18px; height: 18px; border-radius: var(--radio-marca); }
+.giro {
+  margin-top: auto;
+  padding-top: 40px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 400ms ease-out, transform 400ms ease-out;
+}
+.giro.visible { opacity: 1; transform: none; }
+.giro-texto { margin: 0; font-size: 56px; font-weight: 700; line-height: 1.15; text-wrap: balance; }
+.giro-nota { margin: 12px 0 0; font-size: 24px; color: var(--gris-oscuro); }
+.giro ~ .fuente { margin-top: 0; }
+
+/* Slide 2 */
+.cuerpo-2 { margin-top: 56px; display: flex; flex-direction: column; gap: 48px; }
+.datos-fila { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.datos-fila .dato-numero { font-size: 56px; color: var(--blanco); }
+.datos-fila .tarjeta.resalta .dato-numero { color: var(--amarillo); }
+
+/* Slide 3 */
+.cuerpo-3 { margin-top: 32px; display: grid; grid-template-columns: 640px 1fr; gap: 80px; align-items: start; }
+.cuerpo-3 svg { display: block; overflow: visible; }
+.eje text, .nota-svg { fill: var(--gris); font-size: 20px; font-family: var(--fuente); }
+.eje-titulo { fill: var(--gris); font-size: 22px; font-family: var(--fuente); }
+.panel-datos { display: flex; flex-direction: column; gap: 40px; padding-top: 24px; }
+
+/* Slide del tamaño */
+.cuerpo-tam { margin-top: 48px; display: grid; grid-template-columns: 1fr 520px; gap: 64px; align-items: start; }
+.cuerpo-tam .barras { gap: 16px; }
+.cuerpo-tam .barra-fila { grid-template-columns: 400px 1fr; }
+.cuerpo-tam .barra { height: 52px; }
+.cuerpo-tam .barra-valor { font-size: 36px; }
+.columna-datos { display: flex; flex-direction: column; gap: 24px; }
+.columna-datos .dato-numero { font-size: 56px; }
+
+/* Slide 4 */
+.cuerpo-4 { margin-top: 48px; display: grid; grid-template-columns: 1fr 640px; gap: 64px; align-items: start; }
+.grupo-barras { display: flex; flex-direction: column; gap: 16px; }
+.grupo-barras + .grupo-barras { margin-top: 40px; }
+.grupo-titulo { margin: 0; font-size: 26px; font-weight: 700; color: var(--gris); }
+.grupo-barras .barra-fila { grid-template-columns: 260px 1fr; }
+.grupo-barras .barra { height: 56px; }
+.grupo-barras .barra-valor { font-size: 36px; }
+.simulacion { display: flex; flex-direction: column; gap: 24px; }
+
+/* Slide 5 */
+.cuerpo-5 { margin-top: 48px; display: flex; flex-direction: column; gap: 40px; }
+.cuerpo-5 .datos-fila .dato-numero { color: var(--amarillo); }
+.acumulado { display: grid; grid-template-columns: 560px 1fr; gap: 64px; align-items: end; }
+.anios { display: flex; align-items: flex-end; gap: 24px; height: 260px; }
+.anio { flex: 1; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-end; gap: 12px; height: 100%; }
+.anio-barra { border-radius: var(--radio-marca) var(--radio-marca) 0 0; background: var(--superficie-alta); transition: background-color 400ms ease-out; }
+.anio.en-rango .anio-barra { background: var(--apagado-negro); }
+.anio.elegido .anio-barra { background: var(--amarillo); }
+.anio-valor { font-size: 32px; font-weight: 700; text-align: center; min-height: 1.2em; }
+.anio-nombre { font-size: 22px; color: var(--gris); text-align: center; }
+
+/* Slide 6 */
+.pasos { margin-top: 48px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.paso-numero { margin: 0; font-size: 26px; font-weight: 700; color: var(--amarillo); }
+.paso-verbo { margin: 12px 0 0; font-size: 44px; font-weight: 700; }
+.paso-texto { margin: 12px 0 0; font-size: 24px; line-height: 1.45; color: var(--gris); }
+.piloto { margin-top: 40px; display: grid; grid-template-columns: 560px 1fr; gap: 64px; align-items: center; }
+.resultado-numero { font-size: 88px; font-weight: 700; line-height: 1; color: var(--verde); }
+.resultado-frase { margin: 12px 0 0; font-size: 30px; font-weight: 700; line-height: 1.3; }
+.resultado-nota { margin: 8px 0 0; font-size: 24px; line-height: 1.45; color: var(--gris); }
+.cierre { margin: auto 0 0; padding-top: 32px; font-size: 24px; line-height: 1.5; color: var(--gris); }
+.cierre b { color: var(--blanco); }
+
+.tip {
+  position: absolute;
+  z-index: 5;
+  pointer-events: none;
+  min-width: 320px;
+  padding: 16px 20px;
+  border-radius: var(--radio);
+  background: #262626;
+  color: var(--blanco);
+  box-shadow: var(--shadow-hover);
+  font-size: 22px;
+  line-height: 1.5;
+}
+.tip strong { display: block; margin-bottom: 4px; }
+.tip div { display: flex; justify-content: space-between; gap: 24px; }
+.tip div span:first-child { color: var(--gris); }
+
+@media (prefers-reduced-motion: reduce) {
+  .giro { transform: none; transition: opacity 400ms ease-out; }
+  .tarjeta { transition: none; }
+  .tarjeta:hover { transform: none; }
+}
+</style>
+</head>
+<body>
+<div class="escenario" id="escenario">
+
+  <!-- 1. CONTEXTO -->
+  <section class="slide amarilla" data-pasos="2" aria-label="Contexto">
+   
+    <h1 class="titulo">Si mañana cerramos 2 de nuestras 10 tiendas, las ventas solo caen <span id="s1-titulo-pct">2 %</span>.</h1>
+    <p class="contexto" id="s1-contexto"></p>
+    <div class="grafico-1" role="img" id="s1-grafico">
+      <span class="fila-etiqueta">Tiendas</span>
+      <div class="barra-apilada" id="s1-barra-tiendas"></div>
+      <div class="valor"><span class="valor-numero" id="s1-pct-tiendas"></span><span class="valor-nota" id="s1-nota-tiendas"></span></div>
+      <span class="fila-etiqueta">Ventas</span>
+      <div class="barra-apilada" id="s1-barra-ventas"></div>
+      <div class="valor"><span class="valor-numero" id="s1-pct-ventas"></span><span class="valor-nota" id="s1-nota-ventas"></span></div>
+      <div class="leyenda">
+        <span><i style="background: var(--negro)"></i>Tiendas de barrio (OUT019 y OUT010)</span>
+        <span><i style="background: var(--apagado-amarillo)"></i>Supermercados</span>
+      </div>
+    </div>
+    <div class="giro" id="s1-giro" data-paso="1">
+      <p class="giro-texto">No las vamos a cerrar. Ahí hay <span id="s1-giro-monto"></span> al año escondidos.</p>
+      <p class="giro-nota">Es lo que venderían sus productos si vendieran como en un Supermercado Tipo 1.</p>
+    </div>
+    <p class="fuente" id="s1-fuente"></p>
+  </section>
+
+  <!-- 2. HALLAZGO 1 -->
+  <section class="slide" aria-label="Hallazgo 1">
+    <p class="antetitulo">Hallazgo 1</p>
+    <h2 class="titulo">Misma gaseosa, mismo precio, misma ciudad: en la tienda de barrio vende 7 veces menos.</h2>
+    <div class="cuerpo-2">
+      <div class="barras" id="s2-barras"></div>
+      <div class="datos-fila">
+        <div class="tarjeta dato"><span class="dato-etiqueta">Precio</span><span class="dato-numero" id="s2-precio"></span><span class="dato-etiqueta">Prácticamente igual</span></div>
+        <div class="tarjeta dato"><span class="dato-etiqueta">Ciudad</span><span class="dato-numero">Nivel 1</span><span class="dato-etiqueta">Las dos tiendas, la más urbanizada</span></div>
+        <div class="tarjeta dato resalta"><span class="dato-etiqueta">Vitrina</span><span class="dato-numero" id="s2-vitrina"></span><span class="dato-etiqueta" id="s2-vitrina-nota"></span></div>
+      </div>
+    </div>
+    <p class="fuente" id="s2-fuente"></p>
+  </section>
+
+  <!-- 3. HALLAZGO 2 -->
+  <section class="slide" aria-label="Hallazgo 2">
+    <p class="antetitulo">Hallazgo 2</p>
+    <h2 class="titulo">No es un caso aislado: el 100 % de los productos vende más en el supermercado, 7,5 veces más.</h2>
+    <div class="cuerpo-3">
+      <div id="s3-dispersion" role="img"></div>
+      <div class="panel-datos">
+        <div class="dato"><span class="dato-numero" id="s3-pct"></span><span class="dato-etiqueta" id="s3-pct-nota"></span></div>
+        <div class="dato"><span class="dato-numero" id="s3-veces"></span><span class="dato-etiqueta">vende el supermercado el <b>mismo producto</b> (mediana)</span></div>
+        <div class="tarjeta dato"><span class="dato-etiqueta"><b>¿Es la ciudad? No.</b></span><span class="dato-etiqueta" id="s3-ciudad"></span></div>
+      </div>
+    </div>
+    <p class="fuente">Fuente: EDA, sección 7.4. Cada punto es un producto: su venta promedio en las tiendas de barrio contra su venta promedio en los Supermercados Tipo 1. Misma ciudad: OUT019 contra OUT046 y OUT049; OUT010 contra OUT013, OUT018 y OUT027.</p>
+  </section>
+
+  <!-- 4. HALLAZGO 3: el tamaño -->
+  <section class="slide" aria-label="Hallazgo 3">
+    <p class="antetitulo">Hallazgo 3</p>
+    <h2 class="titulo">No es el tamaño: OUT046 es igual de pequeña, está en la misma ciudad y vende 7 veces más.</h2>
+    <div class="cuerpo-tam">
+      <div>
+        <p class="control-etiqueta">Venta por producto</p>
+        <div class="barras" id="tam-barras" role="img"></div>
+      </div>
+      <div class="columna-datos">
+        <div class="tarjeta dato"><span class="dato-numero" id="tam-veces"></span><span class="dato-etiqueta" id="tam-veces-nota"></span></div>
+        <div class="tarjeta dato"><span class="dato-numero" id="tam-surtido"></span><span class="dato-etiqueta" id="tam-surtido-nota"></span></div>
+      </div>
+    </div>
+    <p class="fuente">Fuente: EDA, secciones 3.1 y 6.5. Tamaño según train.csv (pequeña, mediana o grande), sin metros cuadrados. OUT010, OUT017 y OUT045 no tienen tamaño registrado y por eso no aparecen.</p>
+  </section>
+
+  <!-- 5. HALLAZGO 4 -->
+  <section class="slide" aria-label="Hallazgo 4">
+    <p class="antetitulo">Hallazgo 4</p>
+    <h2 class="titulo">Más vitrina no lo arregla: ya tienen 1,7 veces más espacio y venden 7 veces menos.</h2>
+    <div class="cuerpo-4">
+      <div>
+        <div class="grupo-barras" id="s4-vitrina"><p class="grupo-titulo">Vitrina por producto (% del área de exhibición)</p></div>
+        <div class="grupo-barras" id="s4-ventas"><p class="grupo-titulo">Venta por producto</p></div>
+      </div>
+      <div class="simulacion">
+        <div>
+          <p class="control-etiqueta">Simulación: denle más vitrina a las tiendas de barrio</p>
+          <div class="segmentado" role="radiogroup" aria-label="Vitrina extra" id="s4-control"></div>
+        </div>
+        <div class="tarjeta dato">
+          <span class="dato-etiqueta">Ventas extra al año</span>
+          <span class="dato-numero">≈ 0</span>
+          <span class="dato-etiqueta" id="s4-resultado"></span>
+        </div>
+        <p class="dato-etiqueta" id="s4-correlacion"></p>
+      </div>
+    </div>
+    <p class="fuente">Fuente: EDA, secciones 6.4 y 7.2. Ventas extra: regresión de ventas sobre vitrina con efecto de cada tienda y del precio.</p>
+  </section>
+
+  <!-- 6. SI NO HACEMOS NADA -->
+  <section class="slide" aria-label="Si no hacemos nada">
+    <p class="antetitulo">Si no hacemos nada</p>
+    <h2 class="titulo">Por producto, la brecha no se nota. Sumada, son 2,1 millones al año.</h2>
+    <div class="cuerpo-5">
+      <div class="datos-fila">
+        <div class="tarjeta dato"><span class="dato-numero" id="s5-producto"></span><span class="dato-etiqueta">menos vende cada producto en una tienda de barrio</span></div>
+        <div class="tarjeta dato"><span class="dato-numero" id="s5-anio"></span><span class="dato-etiqueta" id="s5-anio-nota"></span></div>
+        <div class="tarjeta dato"><span class="dato-numero" id="s5-acumulado"></span><span class="dato-etiqueta" id="s5-acumulado-nota"></span></div>
+      </div>
+      <div class="acumulado">
+        <div>
+          <p class="control-etiqueta">Simulación: años sin hacer nada</p>
+          <div class="segmentado" role="radiogroup" aria-label="Años sin hacer nada" id="s5-control"></div>
+        </div>
+        <div class="anios" id="s5-anios" role="img"></div>
+      </div>
+    </div>
+    <p class="fuente" id="s5-fuente"></p>
+  </section>
+
+  <!-- 7. ACCIÓN -->
+  <section class="slide" aria-label="Acción">
+    <p class="antetitulo">Acción</p>
+    <h2 class="titulo">Este trimestre: operar OUT019 como supermercado y medirla contra sus vecinas.</h2>
+    <div class="pasos">
+      <div class="tarjeta"><p class="paso-numero">01</p><p class="paso-verbo">Convertir</p><p class="paso-texto" id="s6-paso1"></p></div>
+      <div class="tarjeta"><p class="paso-numero">02</p><p class="paso-verbo">Medir</p><p class="paso-texto">Su venta por producto contra OUT046 y OUT049, los supermercados de su misma ciudad.</p></div>
+      <div class="tarjeta"><p class="paso-numero">03</p><p class="paso-verbo">Decidir</p><p class="paso-texto">Si duplica su venta por producto, el formato pasa a OUT010. Si no sube al menos 50 %, se detiene.</p></div>
+    </div>
+    <div class="piloto">
+      <div>
+        <p class="control-etiqueta">Simulación: ¿y si rinde menos de lo esperado?</p>
+        <div class="segmentado" role="radiogroup" aria-label="Rendimiento del piloto" id="s6-control"></div>
+      </div>
+      <div>
+        <span class="resultado-numero" id="s6-numero"></span>
+        <p class="resultado-frase" id="s6-frase"></p>
+        <p class="resultado-nota" id="s6-nota"></p>
+      </div>
+    </div>
+    <p class="cierre"><b>Responsable:</b> gerencia de operaciones. <b>Plazo:</b> 3 meses. <b>Métrica:</b> venta por producto de OUT019 contra OUT046 y OUT049.</p>
+  </section>
+
+  <p class="contador" id="contador"></p>
+</div>
+
+<script>
+// Datos calculados desde train.csv con la misma limpieza del notebook EDA_Ventas_Tiendas.ipynb
+const DATOS = {"gaseosa":{"OUT019":{"precio":233.0,"vis":0.1351,"ventas":934.78},"OUT049":{"precio":235.4,"vis":0.0773,"ventas":6309.79}},"pares":[["DRA12","Soft Drinks",283.6,2481.8],["DRA24","Soft Drinks",409.5,2497.7],["DRA59","Soft Drinks",370.2,2174.8],["DRB13","Soft Drinks",948.8,2798.9],["DRB25","Soft Drinks",214.4,1750.8],["DRB48","Soft Drinks",157.1,581.4],["DRC25","Soft Drinks",128.8,1660.5],["DRC27","Dairy",245.7,3746.6],["DRD15","Dairy",697.1,3253.1],["DRD24","Soft Drinks",141.8,2304.5],["DRD25","Soft Drinks",452.7,2009.1],["DRD27","Dairy",198.4,1537.7],["DRD37","Soft Drinks",186.4,1137.2],["DRD60","Soft Drinks",181.8,3408.1],["DRE01","Soft Drinks",484.7,5331.7],["DRE03","Dairy",47.3,813.1],["DRE15","Dairy",303.6,1265.0],["DRE27","Dairy",195.7,1154.9],["DRE37","Soft Drinks",189.1,2016.9],["DRE49","Soft Drinks",151.8,2479.4],["DRE60","Soft Drinks",679.1,4753.8],["DRF01","Soft Drinks",291.6,1837.2],["DRF03","Dairy",81.2,536.1],["DRF15","Dairy",306.3,765.7],["DRF23","Hard Drinks",174.4,2337.5],["DRF25","Soft Drinks",73.2,827.6],["DRF27","Dairy",153.1,3001.4],["DRF36","Soft Drinks",191.1,3949.1],["DRF37","Soft Drinks",789.0,3418.9],["DRF49","Soft Drinks",113.9,1423.1],["DRG01","Soft Drinks",229.7,1071.9],["DRG03","Dairy",307.6,3306.7],["DRG11","Hard Drinks",107.9,1869.6],["DRG27","Dairy",40.6,663.4],["DRG37","Soft Drinks",311.6,1994.2],["DRG49","Soft Drinks",488.7,6230.9],["DRG51","Dairy",657.8,2384.6],["DRH01","Soft Drinks",347.5,2954.2],["DRH03","Dairy",233.0,838.9],["DRH13","Soft Drinks",213.1,958.8],["DRH15","Dairy",131.8,1164.5],["DRH23","Hard Drinks",110.5,967.1],["DRH25","Soft Drinks",51.9,779.0],["DRH36","Soft Drinks",223.7,1491.4],["DRH37","Soft Drinks",822.3,2368.1],["DRH39","Dairy",153.1,1569.6],["DRH49","Soft Drinks",165.1,908.2],["DRH51","Dairy",175.8,849.6],["DRH59","Hard Drinks",73.2,915.5],["DRI01","Soft Drinks",517.3,2629.7],["DRI03","Dairy",708.4,3329.5],["DRI11","Hard Drinks",230.4,1919.7],["DRI25","Soft Drinks",165.8,1050.0],["DRI37","Soft Drinks",117.2,585.9],["DRI39","Dairy",226.4,1018.7],["DRI47","Hard Drinks",431.4,2660.5],["DRI51","Dairy",343.6,3034.7],["DRJ01","Soft Drinks",322.2,1557.5],["DRJ11","Hard Drinks",756.3,3214.5],["DRJ13","Soft Drinks",962.7,2808.0],["DRJ23","Hard Drinks",378.2,3592.7],["DRJ24","Soft Drinks",370.2,2924.5],["DRJ59","Hard Drinks",77.2,424.8],["DRK11","Hard Drinks",447.4,2050.7],["DRK12","Soft Drinks",33.3,526.0],["DRK35","Hard Drinks",56.9,781.8],["DRK37","Soft Drinks",569.3,5218.2],["DRK49","Soft Drinks",40.6,544.2],["DRK59","Hard Drinks",468.7,2578.0],["DRL01","Soft Drinks",701.1,5024.5],["DRL35","Hard Drinks",129.8,822.3],["DRL49","Soft Drinks",285.0,1054.4],["DRL59","Hard Drinks",161.8,1240.4],["DRL60","Soft Drinks",457.4,2134.6],["DRM23","Hard Drinks",172.4,2759.1],["DRM37","Soft Drinks",394.2,5255.4],["DRM47","Hard Drinks",382.2,3503.2],["DRM59","Hard Drinks",461.4,2806.8],["DRN35","Hard Drinks",71.9,871.9],["DRN36","Soft Drinks",95.9,1342.3],["DRN37","Soft Drinks",334.2,2297.8],["DRN47","Hard Drinks",539.3,3625.3],["DRO47","Hard Drinks",113.2,2065.6],["DRO59","Hard Drinks",75.9,1366.2],["DRP35","Hard Drinks",127.8,2556.7],["DRY23","Soft Drinks",42.6,543.3],["FDA01","Canned",117.2,893.5],["FDA02","Dairy",289.0,1733.7],["FDA03","Dairy",291.6,2442.3],["FDA07","Fruits and Vegetables",122.5,1990.7],["FDA08","Fruits and Vegetables",328.9,2096.8],["FDA10","Snack Foods",245.0,1347.6],["FDA13","Canned",38.0,569.3],["FDA14","Dairy",585.9,1684.5],["FDA15","Dairy",498.0,5727.2],["FDA19","Fruits and Vegetables",192.7,2227.3],["FDA26","Dairy",219.0,4271.4],["FDA28","Frozen Foods",377.5,2432.8],["FDA32","Fruits and Vegetables",539.3,3289.7],["FDA36","Baking Goods",555.3,2128.6],["FDA38","Dairy",480.7,3365.0],["FDA39","Meat",78.6,824.9],["FDA43","Fruits and Vegetables",585.2,2145.9],["FDA44","Fruits and Vegetables",56.6,939.4],["FDA49","Canned",130.8,1250.2],["FDA50","Dairy",144.8,1544.7],["FDA55","Fruits and Vegetables",447.4,5369.0],["FDB04","Dairy",351.5,1335.9],["FDB05","Frozen Foods",743.0,3467.5],["FDB09","Fruits and Vegetables",124.5,1328.0],["FDB14","Canned",279.6,2081.7],["FDB15","Dairy",527.3,4376.7],["FDB17","Frozen Foods",181.1,3839.3],["FDB22","Snack Foods",307.6,2665.9],["FDB23","Starchy Foods",451.4,5116.0],["FDB27","Dairy",197.1,3448.8],["FDB28","Dairy",791.0,2372.9],["FDB32","Fruits and Vegetables",140.8,2065.3],["FDB33","Fruits and Vegetables",477.4,3500.8],["FDB34","Snack Foods",261.7,1679.0],["FDB35","Starchy Foods",183.8,1630.9],["FDB38","Canned",319.6,2876.3],["FDB39","Dairy",111.9,810.9],["FDB40","Dairy",291.6,2721.8],["FDB41","Frozen Foods",118.2,913.9],["FDB45","Fruits and Vegetables",104.5,1541.8],["FDB49","Baking Goods",394.2,1839.4],["FDB58","Snack Foods",354.5,2599.9],["FDB60","Baking Goods",194.4,3499.4],["FDC02","Canned",520.7,5293.3],["FDC04","Dairy",483.4,2658.5],["FDC08","Fruits and Vegetables",452.7,3112.6],["FDC09","Fruits and Vegetables",102.5,1230.4],["FDC10","Snack Foods",120.5,1245.3],["FDC14","Canned",83.9,608.2],["FDC15","Dairy",314.3,2435.5],["FDC20","Fruits and Vegetables",111.9,587.2],["FDC21","Fruits and Vegetables",162.8,1736.4],["FDC26","Canned",111.2,1519.6],["FDC28","Frozen Foods",108.5,1483.2],["FDC32","Fruits and Vegetables",277.6,1172.3],["FDC34","Snack Foods",311.6,3505.4],["FDC35","Starchy Foods",621.2,2553.8],["FDC37","Baking Goods",214.4,2679.8],["FDC41","Frozen Foods",191.4,1493.1],["FDC45","Fruits and Vegetables",171.1,1768.1],["FDC46","Snack Foods",184.4,3836.1],["FDC47","Snack Foods",570.9,5709.2],["FDC48","Baking Goods",412.8,1733.7],["FDC50","Canned",285.6,1856.6],["FDC52","Dairy",150.5,2006.3],["FDC53","Frozen Foods",98.5,1379.5],["FDC57","Fruits and Vegetables",579.2,2703.1],["FDC59","Starchy Foods",127.8,1278.3],["FDC60","Baking Goods",177.1,2125.2],["FDD02","Canned",592.6,2311.0],["FDD04","Dairy",141.8,2070.5],["FDD05","Frozen Foods",361.5,2458.4],["FDD10","Snack Foods",892.2,1784.3],["FDD14","Canned",368.9,3135.3],["FDD16","Frozen Foods",111.9,1491.4],["FDD17","Frozen Foods",237.7,4001.1],["FDD26","Canned",555.3,3084.9],["FDD29","Frozen Foods",1014.7,5022.7],["FDD36","Baking Goods",118.5,1896.2],["FDD38","Canned",203.7,1901.5],["FDD39","Dairy",432.8,3732.6],["FDD46","Snack Foods",153.8,2153.2],["FDD47","Starchy Foods",852.2,3681.6],["FDD51","Dairy",90.5,430.1],["FDD53","Frozen Foods",62.9,713.1],["FDD56","Fruits and Vegetables",1050.6,3064.3],["FDD57","Fruits and Vegetables",95.2,1256.8],["FDD58","Snack Foods",399.5,1373.2],["FDE02","Canned",469.4,1815.0],["FDE04","Frozen Foods",719.1,2831.3],["FDE05","Frozen Foods",437.4,2041.3],["FDE08","Fruits and Vegetables",371.2,3563.4],["FDE09","Fruits and Vegetables",331.6,1215.8],["FDE10","Snack Foods",131.2,1792.6],["FDE11","Starchy Foods",277.6,4164.6],["FDE16","Frozen Foods",937.8,4793.1],["FDE17","Frozen Foods",151.1,2846.4],["FDE22","Snack Foods",319.6,2636.6],["FDE24","Baking Goods",285.0,1614.8],["FDE26","Canned",289.0,2383.9],["FDE28","Frozen Foods",345.6,4607.3],["FDE33","Fruits and Vegetables",235.7,1571.3],["FDE34","Snack Foods",363.5,3680.7],["FDE35","Starchy Foods",58.6,664.0],["FDE40","Dairy",123.8,1021.7],["FDE41","Frozen Foods",253.7,1268.3],["FDE45","Fruits and Vegetables",716.4,3104.4],["FDE46","Snack Foods",604.5,1775.9],["FDE51","Dairy",111.5,524.2],["FDE53","Frozen Foods",426.1,887.7],["FDE56","Fruits and Vegetables",247.7,1300.3],["FDE59","Starchy Foods",179.8,602.2],["FDF04","Frozen Foods",516.7,4348.6],["FDF08","Fruits and Vegetables",175.8,1472.1],["FDF16","Frozen Foods",591.2,2483.2],["FDF20","Fruits and Vegetables",394.2,3251.8],["FDF21","Fruits and Vegetables",189.8,4326.4],["FDF22","Snack Foods",427.4,3847.0],["FDF24","Baking Goods",327.6,1528.7],["FDF26","Canned",153.8,2050.7],["FDF32","Fruits and Vegetables",791.0,2307.0],["FDF33","Seafood",431.4,2534.7],["FDF34","Snack Foods",595.2,2711.6],["FDF40","Dairy",498.0,3486.1],["FDF46","Snack Foods",575.9,1190.2],["FDF52","Frozen Foods",273.6,2700.0],["FDF56","Fruits and Vegetables",633.8,3048.5],["FDF57","Fruits and Vegetables",170.4,2624.8],["FDF58","Snack Foods",63.3,1644.5],["FDG02","Canned",571.3,2094.6],["FDG04","Frozen Foods",374.2,3367.6],["FDG08","Fruits and Vegetables",171.8,3229.4],["FDG09","Fruits and Vegetables",563.3,3129.3],["FDG10","Snack Foods",229.0,572.6],["FDG12","Baking Goods",120.5,2410.2],["FDG16","Frozen Foods",1078.6,3408.4],["FDG20","Fruits and Vegetables",177.1,1712.0],["FDG21","Seafood",149.8,4044.7],["FDG31","Meat",226.0,645.8],["FDG32","Fruits and Vegetables",889.5,2624.1],["FDG33","Seafood",171.8,2834.3],["FDG34","Snack Foods",542.6,1329.4],["FDG35","Starchy Foods",347.5,2954.2],["FDG38","Canned",170.4,1840.8],["FDG40","Frozen Foods",67.9,628.2],["FDG44","Fruits and Vegetables",161.8,970.7],["FDG45","Fruits and Vegetables",424.8,5309.8],["FDG46","Snack Foods",284.6,2315.0],["FDG47","Starchy Foods",262.3,4721.9],["FDG50","Canned",182.4,1295.2],["FDG53","Frozen Foods",139.8,1607.9],["FDG57","Fruits and Vegetables",194.4,664.2],["FDG58","Snack Foods",467.4,2440.8],["FDH04","Frozen Foods",271.6,1313.0],["FDH08","Fruits and Vegetables",459.4,3330.7],["FDH10","Snack Foods",581.2,1307.8],["FDH12","Baking Goods",319.6,1633.4],["FDH14","Canned",281.0,2163.5],["FDH17","Frozen Foods",293.6,1566.0],["FDH19","Meat",347.5,2432.8],["FDH21","Seafood",237.7,2258.1],["FDH27","Dairy",143.8,2099.7],["FDH28","Frozen Foods",38.0,485.8],["FDH31","Meat",198.4,1091.2],["FDH33","Snack Foods",175.8,650.4],["FDH34","Snack Foods",185.8,4272.4],["FDH35","Starchy Foods",164.5,2096.8],["FDH38","Canned",117.2,2431.5],["FDH40","Frozen Foods",243.7,1543.3],["FDH41","Frozen Foods",430.1,2849.5],["FDH44","Fruits and Vegetables",294.3,2207.1],["FDH45","Fruits and Vegetables",123.8,670.8],["FDH47","Starchy Foods",97.2,1749.7],["FDH48","Baking Goods",346.2,1190.1],["FDH52","Frozen Foods",123.8,866.9],["FDH53","Frozen Foods",165.1,1320.9],["FDH56","Fruits and Vegetables",289.6,1911.5],["FDH57","Fruits and Vegetables",263.7,2010.4],["FDH60","Baking Goods",392.8,3191.7],["FDI04","Frozen Foods",791.0,3509.9],["FDI07","Meat",395.5,3598.9],["FDI15","Dairy",530.0,4663.8],["FDI16","Frozen Foods",159.8,1118.5],["FDI19","Meat",484.7,4301.7],["FDI20","Fruits and Vegetables",422.1,4854.3],["FDI21","Snack Foods",191.8,1054.6],["FDI22","Snack Foods",418.1,3679.5],["FDI24","Baking Goods",352.9,3587.6],["FDI26","Canned",892.2,2765.7],["FDI32","Fruits and Vegetables",403.1,2188.5],["FDI38","Canned",621.2,4710.7],["FDI41","Frozen Foods",147.1,2736.8],["FDI56","Fruits and Vegetables",91.2,1793.9],["FDI60","Baking Goods",126.5,838.1],["FDJ02","Canned",294.3,1765.7],["FDJ03","Dairy",49.3,886.8],["FDJ07","Meat",466.1,1747.7],["FDJ08","Fruits and Vegetables",573.3,3439.5],["FDJ14","Canned",399.5,1091.9],["FDJ20","Fruits and Vegetables",247.7,1527.3],["FDJ22","Snack Foods",383.5,2348.9],["FDJ28","Frozen Foods",192.4,2501.4],["FDJ36","Baking Goods",205.1,1401.3],["FDJ41","Frozen Foods",1046.6,3597.8],["FDJ44","Fruits and Vegetables",697.8,2674.7],["FDJ45","Seafood",173.1,701.1],["FDJ48","Baking Goods",247.0,4001.6],["FDJ55","Meat",1575.3,4455.8],["FDJ56","Fruits and Vegetables",199.7,1697.8],["FDJ57","Seafood",185.8,4644.0],["FDJ58","Snack Foods",687.1,3650.2],["FDK02","Canned",299.6,1677.8],["FDK03","Dairy",254.3,5404.6],["FDK04","Frozen Foods",229.0,782.5],["FDK08","Fruits and Vegetables",202.4,1281.9],["FDK09","Snack Foods",687.1,2748.4],["FDK15","Meat",148.8,1488.1],["FDK20","Fruits and Vegetables",122.5,2768.7],["FDK21","Snack Foods",500.7,3304.5],["FDK22","Snack Foods",432.8,3137.6],["FDK24","Baking Goods",135.8,905.5],["FDK25","Breakfast",336.9,4000.6],["FDK26","Canned",1305.0,3616.6],["FDK27","Meat",121.2,1898.4],["FDK28","Frozen Foods",1288.3,7343.4],["FDK33","Snack Foods",213.1,4261.1],["FDK38","Canned",296.9,1818.8],["FDK40","Frozen Foods",526.0,4733.8],["FDK43","Meat",253.0,2466.8],["FDK45","Seafood",339.6,1811.0],["FDK46","Snack Foods",259.7,4673.9],["FDK51","Dairy",265.0,4504.8],["FDK52","Frozen Foods",677.1,4288.4],["FDK55","Meat",178.4,1026.0],["FDK56","Fruits and Vegetables",561.3,3180.5],["FDK58","Snack Foods",202.4,2145.5],["FDL02","Canned",211.7,2187.8],["FDL09","Snack Foods",167.8,2181.2],["FDL12","Baking Goods",299.6,1238.4],["FDL13","Breakfast",582.6,2971.1],["FDL14","Canned",311.6,2440.8],["FDL15","Meat",152.5,1829.6],["FDL16","Frozen Foods",139.8,916.6],["FDL20","Fruits and Vegetables",222.4,2001.4],["FDL21","Snack Foods",79.9,669.1],["FDL28","Frozen Foods",691.1,1958.1],["FDL32","Fruits and Vegetables",279.6,1342.3],["FDL33","Snack Foods",195.7,2251.1],["FDL36","Baking Goods",89.9,1468.1],["FDL38","Canned",133.8,1665.4],["FDL40","Frozen Foods",193.1,1029.8],["FDL45","Snack Foods",250.3,2420.0],["FDL46","Snack Foods",117.8,1561.5],["FDL48","Baking Goods",145.8,524.9],["FDL52","Frozen Foods",56.9,771.7],["FDL56","Fruits and Vegetables",87.2,1599.0],["FDL57","Snack Foods",775.0,5554.1],["FDL58","Snack Foods",791.0,3910.9],["FDM02","Canned",87.2,1221.1],["FDM08","Fruits and Vegetables",1342.3,3504.8],["FDM09","Snack Foods",169.8,1952.5],["FDM12","Baking Goods",188.4,1695.8],["FDM13","Breakfast",131.2,1267.9],["FDM22","Snack Foods",53.3,1225.1],["FDM25","Breakfast",175.8,2812.3],["FDM27","Meat",473.4,2445.8],["FDM28","Frozen Foods",179.8,2381.9],["FDM32","Fruits and Vegetables",89.9,1168.5],["FDM34","Snack Foods",524.7,1967.4],["FDM36","Baking Goods",344.9,2345.2],["FDM39","Dairy",358.2,4029.8],["FDM44","Fruits and Vegetables",258.0,1470.6],["FDM51","Meat",203.7,1772.5],["FDM56","Fruits and Vegetables",218.4,1146.5],["FDM58","Snack Foods",223.7,2404.9],["FDN01","Breakfast",264.7,2176.1],["FDN03","Meat",876.2,2503.4],["FDN08","Fruits and Vegetables",117.8,1944.5],["FDN09","Snack Foods",731.0,3492.8],["FDN12","Baking Goods",223.7,1621.9],["FDN13","Breakfast",402.1,1206.4],["FDN15","Meat",279.6,1491.4],["FDN21","Snack Foods",322.2,2175.2],["FDN24","Baking Goods",273.0,1128.3],["FDN25","Breakfast",229.0,439.0],["FDN34","Snack Foods",338.2,3593.7],["FDN38","Canned",1001.4,4381.0],["FDN39","Meat",671.1,2307.0],["FDN48","Baking Goods",643.2,1837.6],["FDN49","Breakfast",39.9,585.9],["FDN56","Fruits and Vegetables",289.0,2696.9],["FDN57","Snack Foods",567.3,3119.9],["FDN60","Baking Goods",316.9,2733.4],["FDO03","Meat",687.1,4580.7],["FDO08","Fruits and Vegetables",411.1,1973.4],["FDO09","Snack Foods",789.0,4602.3],["FDO10","Snack Foods",257.7,1053.6],["FDO11","Breads",249.0,6847.8],["FDO13","Breakfast",493.4,2096.8],["FDO15","Meat",221.7,1034.7],["FDO16","Frozen Foods",416.1,1886.4],["FDO19","Fruits and Vegetables",97.2,972.1],["FDO22","Snack Foods",159.8,1262.4],["FDO23","Breads",567.3,1725.4],["FDO24","Baking Goods",792.3,2376.9],["FDO25","Canned",419.5,3565.4],["FDO28","Frozen Foods",120.5,1606.8],["FDO34","Snack Foods",167.8,3523.4],["FDO36","Baking Goods",179.8,3235.8],["FDO37","Breakfast",693.1,3835.1],["FDO40","Frozen Foods",596.6,2336.5],["FDO49","Breakfast",50.6,834.9],["FDO56","Fruits and Vegetables",293.0,1171.8],["FDO57","Snack Foods",320.9,2286.5],["FDO60","Baking Goods",89.2,691.4],["FDP01","Breakfast",762.3,1600.9],["FDP03","Meat",495.4,2105.3],["FDP09","Snack Foods",424.8,4354.0],["FDP11","Breads",435.4,2960.9],["FDP13","Canned",79.9,878.9],["FDP16","Frozen Foods",245.7,5323.1],["FDP19","Fruits and Vegetables",258.3,2428.3],["FDP21","Snack Foods",945.4,4727.2],["FDP24","Baking Goods",121.2,1599.5],["FDP25","Canned",327.6,4149.3],["FDP26","Dairy",209.1,1149.8],["FDP27","Meat",379.5,3921.6],["FDP28","Frozen Foods",261.0,3436.4],["FDP33","Snack Foods",255.7,4175.9],["FDP34","Snack Foods",312.9,3650.8],["FDP37","Breakfast",385.5,2484.3],["FDP38","Canned",303.6,506.0],["FDP39","Meat",363.5,830.9],["FDP40","Frozen Foods",111.9,1761.7],["FDP44","Fruits and Vegetables",102.5,1661.0],["FDP46","Snack Foods",89.9,1917.5],["FDP49","Breakfast",110.5,773.7],["FDP51","Meat",592.6,2014.7],["FDP58","Snack Foods",219.0,3614.3],["FDP59","Breads",207.7,1454.1],["FDQ03","Meat",711.1,2370.2],["FDQ04","Frozen Foods",41.3,701.8],["FDQ08","Fruits and Vegetables",91.9,934.1],["FDQ10","Snack Foods",517.3,3492.0],["FDQ11","Breads",257.0,3726.5],["FDQ12","Baking Goods",689.1,2220.4],["FDQ13","Canned",503.3,1300.3],["FDQ14","Dairy",299.6,2172.2],["FDQ15","Meat",162.5,1583.9],["FDQ19","Fruits and Vegetables",242.4,3150.6],["FDQ23","Breads",102.5,2187.4],["FDQ24","Baking Goods",251.7,5117.3],["FDQ25","Canned",517.3,2155.5],["FDQ27","Meat",206.4,2270.4],["FDQ31","Fruits and Vegetables",175.8,1259.7],["FDQ32","Fruits and Vegetables",371.5,3013.4],["FDQ34","Snack Foods",211.7,1228.0],["FDQ36","Baking Goods",37.3,663.7],["FDQ37","Breakfast",775.0,5166.6],["FDQ39","Meat",191.1,3974.6],["FDQ40","Frozen Foods",263.7,3093.6],["FDQ45","Snack Foods",735.0,2511.4],["FDQ47","Breads",35.3,764.6],["FDQ49","Breakfast",469.4,1356.0],["FDQ51","Meat",94.5,803.6],["FDQ56","Fruits and Vegetables",83.9,1719.8],["FDQ57","Snack Foods",146.5,2563.3],["FDQ58","Snack Foods",459.4,1301.6],["FDR01","Canned",398.1,3085.7],["FDR02","Dairy",222.4,2335.0],["FDR04","Frozen Foods",291.6,1555.3],["FDR08","Fruits and Vegetables",111.2,1601.1],["FDR09","Snack Foods",518.0,2849.0],["FDR10","Snack Foods",649.8,2315.0],["FDR12","Baking Goods",687.1,2347.6],["FDR14","Dairy",107.9,521.3],["FDR15","Meat",310.3,2264.9],["FDR20","Fruits and Vegetables",45.3,916.8],["FDR21","Snack Foods",882.2,2399.5],["FDR22","Snack Foods",223.7,2181.2],["FDR23","Breads",441.1,2867.1],["FDR26","Dairy",531.3,1593.9],["FDR27","Meat",397.5,2252.4],["FDR31","Fruits and Vegetables",291.6,3062.0],["FDR32","Fruits and Vegetables",228.4,3939.4],["FDR33","Snack Foods",659.1,1977.4],["FDR36","Baking Goods",251.7,702.6],["FDR37","Breakfast",1094.6,3575.6],["FDR43","Fruits and Vegetables",109.9,446.8],["FDR44","Fruits and Vegetables",261.0,2087.9],["FDR46","Snack Foods",293.0,2709.8],["FDR47","Breads",585.2,2926.2],["FDR48","Baking Goods",455.4,1639.5],["FDR49","Canned",95.9,719.1],["FDR52","Frozen Foods",286.6,2436.3],["FDR59","Breads",1046.6,4273.8],["FDS01","Canned",177.8,2666.5],["FDS02","Dairy",780.3,3641.5],["FDS03","Meat",193.7,1582.3],["FDS04","Frozen Foods",281.0,2219.6],["FDS09","Snack Foods",50.6,910.8],["FDS10","Snack Foods",180.4,2435.8],["FDS11","Breads",223.7,3914.9],["FDS12","Baking Goods",440.4,2936.2],["FDS13","Canned",795.0,3378.6],["FDS15","Meat",215.7,2545.5],["FDS19","Fruits and Vegetables",227.7,1315.6],["FDS21","Snack Foods",123.8,743.0],["FDS23","Breads",385.5,2184.5],["FDS26","Dairy",785.0,4273.8],["FDS27","Meat",196.4,2127.8],["FDS31","Fruits and Vegetables",180.4,3112.4],["FDS32","Fruits and Vegetables",281.0,1685.8],["FDS33","Snack Foods",354.2,1576.2],["FDS37","Canned",115.8,1737.7],["FDS40","Frozen Foods",36.6,540.1],["FDS44","Fruits and Vegetables",480.7,4486.6],["FDS45","Snack Foods",264.7,2540.7],["FDS46","Snack Foods",119.2,1827.4],["FDS48","Baking Goods",225.7,2257.1],["FDS52","Frozen Foods",101.2,1644.5],["FDS55","Fruits and Vegetables",296.9,3207.0],["FDS56","Fruits and Vegetables",787.0,4197.2],["FDS57","Snack Foods",429.4,2032.7],["FDS59","Breads",219.7,2526.7],["FDT03","Meat",183.8,1699.8],["FDT04","Frozen Foods",196.4,536.9],["FDT07","Fruits and Vegetables",256.3,3118.7],["FDT09","Snack Foods",131.8,2175.2],["FDT10","Snack Foods",59.3,666.6],["FDT11","Breads",563.3,3191.8],["FDT12","Baking Goods",225.7,4401.3],["FDT13","Canned",471.1,3768.4],["FDT15","Meat",549.3,2471.8],["FDT24","Baking Goods",154.5,1405.6],["FDT32","Fruits and Vegetables",376.8,3297.4],["FDT34","Snack Foods",420.8,1704.2],["FDT36","Baking Goods",176.4,670.5],["FDT37","Canned",510.0,4526.3],["FDT39","Meat",453.4,2607.1],["FDT40","Frozen Foods",127.2,1271.7],["FDT43","Fruits and Vegetables",155.8,758.2],["FDT46","Snack Foods",75.9,742.1],["FDT51","Meat",167.8,1677.8],["FDT55","Fruits and Vegetables",473.4,3261.1],["FDT56","Fruits and Vegetables",405.5,434.4],["FDT57","Snack Foods",474.0,3318.3],["FDT58","Snack Foods",503.3,2013.4],["FDT60","Baking Goods",123.8,2270.4],["FDU01","Canned",555.3,3701.8],["FDU02","Dairy",916.1,3855.4],["FDU04","Frozen Foods",487.4,2355.6],["FDU07","Fruits and Vegetables",151.1,2357.7],["FDU12","Baking Goods",659.1,3743.9],["FDU13","Canned",588.6,2648.6],["FDU14","Dairy",499.4,3245.8],["FDU15","Meat",71.9,733.4],["FDU20","Fruits and Vegetables",361.5,2265.6],["FDU21","Snack Foods",34.0,489.0],["FDU22","Snack Foods",474.0,2873.9],["FDU23","Breads",330.2,3533.5],["FDU24","Baking Goods",93.2,2097.3],["FDU26","Dairy",238.4,1152.1],["FDU27","Meat",47.9,783.0],["FDU28","Frozen Foods",376.8,2826.3],["FDU32","Fruits and Vegetables",487.4,1665.2],["FDU33","Snack Foods",45.9,1125.5],["FDU35","Breads",199.7,1947.5],["FDU36","Baking Goods",492.7,1675.2],["FDU38","Dairy",575.3,3595.3],["FDU40","Frozen Foods",387.5,2712.5],["FDU44","Fruits and Vegetables",487.4,3195.0],["FDU45","Snack Foods",683.1,2561.7],["FDU46","Snack Foods",259.7,1644.5],["FDU47","Breads",281.0,2388.2],["FDU48","Baking Goods",263.7,922.8],["FDU52","Frozen Foods",312.9,2503.4],["FDU57","Snack Foods",451.4,2407.5],["FDU58","Snack Foods",187.1,2806.3],["FDU60","Baking Goods",169.1,4650.6],["FDV01","Canned",155.1,2999.2],["FDV04","Frozen Foods",628.5,1288.5],["FDV09","Snack Foods",445.4,2464.7],["FDV10","Snack Foods",42.6,852.2],["FDV11","Breads",875.5,1984.5],["FDV15","Meat",311.6,2562.0],["FDV16","Frozen Foods",135.8,631.6],["FDV19","Fruits and Vegetables",160.5,3401.7],["FDV20","Fruits and Vegetables",190.8,2734.1],["FDV21","Snack Foods",375.5,3880.3],["FDV22","Snack Foods",312.9,2933.7],["FDV23","Breads",622.5,1556.3],["FDV24","Baking Goods",449.4,1498.1],["FDV25","Canned",884.2,5968.2],["FDV26","Dairy",975.4,3277.3],["FDV27","Meat",177.1,1195.4],["FDV28","Frozen Foods",67.9,492.4],["FDV31","Fruits and Vegetables",176.4,2205.5],["FDV32","Fruits and Vegetables",316.3,1186.0],["FDV34","Snack Foods",147.8,1182.5],["FDV36","Baking Goods",126.5,3099.3],["FDV37","Canned",197.7,2125.7],["FDV38","Dairy",136.5,644.2],["FDV39","Meat",593.2,2768.4],["FDV45","Snack Foods",1126.5,2910.2],["FDV46","Snack Foods",559.3,2167.2],["FDV47","Breads",253.7,1522.0],["FDV48","Baking Goods",157.1,1021.3],["FDV51","Meat",165.8,1823.6],["FDV59","Breads",1524.0,4354.3],["FDV60","Baking Goods",392.8,3103.3],["FDW01","Canned",152.5,1600.9],["FDW02","Dairy",250.3,2920.6],["FDW07","Fruits and Vegetables",88.6,1204.3],["FDW09","Snack Foods",79.2,887.4],["FDW10","Snack Foods",529.3,5469.5],["FDW12","Baking Goods",145.1,1944.9],["FDW13","Canned",259.7,874.2],["FDW19","Fruits and Vegetables",219.7,1565.5],["FDW20","Fruits and Vegetables",369.5,2525.0],["FDW23","Baking Goods",38.6,633.3],["FDW24","Baking Goods",48.6,631.8],["FDW26","Dairy",555.9,3298.6],["FDW27","Meat",155.1,2275.3],["FDW28","Frozen Foods",195.7,2348.9],["FDW32","Fruits and Vegetables",343.6,1095.1],["FDW34","Snack Foods",486.0,3645.3],["FDW35","Breads",83.9,681.6],["FDW36","Baking Goods",317.6,1217.4],["FDW38","Dairy",80.9,862.9],["FDW39","Meat",176.4,2528.9],["FDW40","Frozen Foods",142.5,4060.7],["FDW44","Fruits and Vegetables",170.4,2284.0],["FDW46","Snack Foods",65.2,1207.1],["FDW47","Breads",304.6,2010.4],["FDW48","Baking Goods",161.1,854.0],["FDW49","Canned",895.5,2686.5],["FDW50","Dairy",334.2,1838.3],["FDW51","Meat",852.2,2982.8],["FDW55","Fruits and Vegetables",249.0,4897.2],["FDW56","Fruits and Vegetables",384.8,4489.7],["FDW59","Breads",169.1,1336.0],["FDX01","Canned",116.5,1631.2],["FDX03","Meat",113.2,603.7],["FDX04","Frozen Foods",191.8,583.2],["FDX07","Fruits and Vegetables",732.4,2990.6],["FDX08","Fruits and Vegetables",360.9,2285.5],["FDX09","Snack Foods",176.4,4352.1],["FDX12","Baking Goods",482.0,4579.4],["FDX14","Dairy",75.2,1153.6],["FDX16","Frozen Foods",149.8,2846.3],["FDX20","Fruits and Vegetables",452.7,2942.8],["FDX21","Snack Foods",109.2,1665.2],["FDX22","Snack Foods",210.4,4137.7],["FDX23","Baking Goods",94.5,992.7],["FDX24","Baking Goods",185.1,1604.1],["FDX26","Dairy",364.9,3238.1],["FDX27","Dairy",189.1,1575.7],["FDX31","Fruits and Vegetables",467.4,4019.6],["FDX32","Fruits and Vegetables",433.4,2131.1],["FDX35","Breads",455.4,3927.9],["FDX36","Baking Goods",450.1,3825.7],["FDX37","Canned",399.5,1672.8],["FDX38","Dairy",95.9,623.2],["FDX39","Meat",422.1,4432.2],["FDX40","Frozen Foods",135.2,664.2],["FDX43","Fruits and Vegetables",166.4,1872.6],["FDX45","Snack Foods",312.9,2221.8],["FDX47","Breads",471.4,1689.1],["FDX48","Baking Goods",463.4,1390.2],["FDX50","Dairy",110.5,1282.1],["FDX51","Meat",783.0,2936.2],["FDX52","Frozen Foods",386.2,3475.5],["FDX55","Fruits and Vegetables",217.7,3810.0],["FDX56","Fruits and Vegetables",207.1,4624.4],["FDX57","Snack Foods",97.2,2008.9],["FDX58","Snack Foods",549.3,3234.7],["FDY02","Dairy",789.0,3331.2],["FDY03","Meat",506.3,1322.1],["FDY07","Fruits and Vegetables",229.7,700.6],["FDY08","Fruits and Vegetables",281.0,1826.3],["FDY09","Snack Foods",175.1,1751.1],["FDY12","Baking Goods",101.2,657.8],["FDY13","Canned",229.7,1607.9],["FDY15","Dairy",469.4,1955.8],["FDY16","Frozen Foods",1106.6,3073.8],["FDY21","Snack Foods",392.8,4255.6],["FDY24","Baking Goods",161.8,1150.5],["FDY26","Dairy",423.4,5716.6],["FDY28","Frozen Foods",641.2,3900.4],["FDY32","Fruits and Vegetables",570.9,3914.9],["FDY33","Snack Foods",159.1,3405.3],["FDY34","Snack Foods",331.6,2403.9],["FDY35","Breads",91.9,796.3],["FDY36","Baking Goods",146.5,1300.0],["FDY38","Dairy",466.1,4194.5],["FDY39","Meat",1010.7,4594.0],["FDY40","Frozen Foods",98.5,689.8],["FDY47","Breads",129.8,1480.1],["FDY48","Baking Goods",307.6,1614.9],["FDY49","Canned",495.4,2339.2],["FDY52","Frozen Foods",122.5,894.3],["FDY55","Fruits and Vegetables",257.0,6322.2],["FDY56","Fruits and Vegetables",451.4,5642.7],["FDY60","Baking Goods",143.8,2444.8],["FDZ01","Canned",103.2,1788.8],["FDZ02","Dairy",195.7,587.2],["FDZ03","Dairy",745.7,2982.8],["FDZ04","Frozen Foods",126.5,961.4],["FDZ07","Fruits and Vegetables",123.8,495.4],["FDZ08","Fruits and Vegetables",82.6,1106.3],["FDZ09","Snack Foods",163.8,3177.5],["FDZ10","Snack Foods",379.5,2192.7],["FDZ12","Baking Goods",357.9,3769.5],["FDZ16","Frozen Foods",775.0,4972.9],["FDZ20","Fruits and Vegetables",508.7,4705.2],["FDZ21","Snack Foods",193.1,1506.0],["FDZ22","Snack Foods",83.2,1414.8],["FDZ23","Baking Goods",745.7,3076.0],["FDZ25","Canned",339.6,3225.8],["FDZ26","Dairy",717.1,3680.9],["FDZ27","Dairy",49.9,586.7],["FDZ28","Frozen Foods",127.2,2331.4],["FDZ32","Fruits and Vegetables",420.8,1262.4],["FDZ33","Snack Foods",443.4,2069.3],["FDZ38","Dairy",862.2,4138.6],["FDZ44","Fruits and Vegetables",234.4,1230.4],["FDZ45","Snack Foods",992.0,3372.9],["FDZ48","Baking Goods",223.7,1733.7],["FDZ51","Meat",190.4,1555.1],["FDZ56","Fruits and Vegetables",1010.7,3158.4],["FDZ58","Snack Foods",122.5,2143.9],["FDZ59","Baking Goods",582.6,4577.4],["FDZ60","Baking Goods",215.7,755.0],["NCA05","Health and Hygiene",296.9,1603.5],["NCA18","Household",231.7,1313.0],["NCA29","Household",171.1,3251.1],["NCA30","Household",567.3,2789.0],["NCA42","Household",316.9,3063.6],["NCA53","Health and Hygiene",145.8,850.6],["NCA54","Household",360.9,2826.8],["NCB06","Health and Hygiene",159.8,2130.6],["NCB07","Household",589.2,3142.6],["NCB18","Household",265.7,1948.1],["NCB19","Household",85.9,1610.4],["NCB30","Household",396.8,3124.9],["NCB31","Household",526.0,3050.7],["NCC18","Household",1034.7,2379.7],["NCC30","Household",356.9,2230.4],["NCC31","Household",1090.6,2181.2],["NCC54","Health and Hygiene",723.1,4458.9],["NCD19","Household",276.3,729.5],["NCD31","Household",164.5,3371.3],["NCD43","Household",210.4,789.0],["NCD54","Household",144.5,2109.4],["NCD55","Household",41.9,713.1],["NCE06","Household",323.6,1294.3],["NCE07","Household",425.4,1772.7],["NCE19","Household",218.4,950.0],["NCE30","Household",1062.0,2336.3],["NCE31","Household",138.5,470.9],["NCE43","Household",170.4,3238.5],["NCE54","Household",150.5,1474.6],["NCF06","Household",259.0,3237.5],["NCF18","Household",767.0,3068.0],["NCF19","Household",145.8,631.8],["NCF30","Household",251.7,2265.1],["NCF31","Household",303.6,1707.8],["NCF42","Household",439.4,2355.3],["NCF54","Household",344.9,2989.0],["NCG07","Household",189.8,3557.9],["NCG18","Household",205.1,2614.6],["NCG30","Household",249.0,1992.1],["NCG43","Household",231.4,1264.8],["NCH06","Household",985.4,3325.7],["NCH07","Household",316.9,2852.3],["NCH18","Household",982.7,2293.0],["NCH30","Household",113.2,2065.6],["NCH42","Household",229.7,5053.4],["NCH43","Household",215.7,2265.1],["NCH54","Household",159.8,2716.5],["NCH55","Household",316.3,1981.9],["NCI06","Household",359.5,4614.0],["NCI29","Health and Hygiene",425.4,1418.2],["NCI30","Household",246.3,2463.5],["NCI31","Others",128.2,744.6],["NCI54","Household",273.0,1594.2],["NCJ06","Household",238.4,1787.7],["NCJ17","Health and Hygiene",170.4,1136.3],["NCJ18","Household",355.5,2204.3],["NCJ19","Others",114.5,1288.3],["NCJ30","Household",509.3,2263.7],["NCJ42","Household",410.1,2153.2],["NCJ43","Household",348.9,1918.8],["NCK05","Health and Hygiene",122.5,995.4],["NCK06","Household",121.2,1777.2],["NCK17","Health and Hygiene",79.9,629.2],["NCK18","Household",660.5,3054.7],["NCK19","Others",387.5,2712.5],["NCK29","Health and Hygiene",246.3,2241.7],["NCK30","Household",1775.7,3889.6],["NCK53","Health and Hygiene",595.2,2083.3],["NCL05","Health and Hygiene",216.4,508.5],["NCL06","Household",523.3,4055.7],["NCL07","Others",39.9,479.4],["NCL18","Household",583.2,2449.6],["NCL29","Health and Hygiene",633.8,2662.1],["NCL31","Others",143.1,3387.8],["NCL41","Health and Hygiene",34.6,406.8],["NCL53","Health and Hygiene",354.2,3223.3],["NCL55","Others",759.0,4048.1],["NCM05","Health and Hygiene",396.5,5991.3],["NCM06","Household",308.9,2317.0],["NCM07","Others",167.8,1258.4],["NCM26","Others",153.1,2909.5],["NCM29","Health and Hygiene",262.3,2328.1],["NCM30","Household",41.3,629.5],["NCM43","Others",815.6,2229.3],["NCM54","Household",254.3,1589.6],["NCM55","Others",370.2,3331.7],["NCN06","Household",327.6,2989.1],["NCN07","Others",263.7,1740.1],["NCN14","Others",459.4,2695.2],["NCN19","Others",379.5,3083.5],["NCN26","Household",351.5,2255.7],["NCN29","Health and Hygiene",145.8,421.2],["NCN30","Household",386.2,836.7],["NCN41","Health and Hygiene",369.5,1847.6],["NCN43","Others",184.8,2381.3],["NCN53","Health and Hygiene",88.2,482.3],["NCO06","Household",67.9,373.5],["NCO07","Others",213.1,2876.3],["NCO14","Household",44.6,475.8],["NCO17","Health and Hygiene",239.7,2247.1],["NCO30","Household",551.3,2682.9],["NCO41","Health and Hygiene",197.1,2093.9],["NCO54","Household",165.8,917.3],["NCO55","Others",321.6,2143.9],["NCP02","Household",296.3,592.6],["NCP05","Health and Hygiene",303.6,2671.7],["NCP06","Household",151.1,2002.6],["NCP17","Health and Hygiene",191.8,1182.5],["NCP29","Health and Hygiene",127.8,788.3],["NCP41","Health and Hygiene",431.4,970.7],["NCP42","Household",387.5,3616.6],["NCP43","Others",179.8,2696.5],["NCP50","Others",80.6,1148.0],["NCP55","Others",138.2,828.9],["NCQ05","Health and Hygiene",376.2,3129.8],["NCQ06","Household",255.0,3782.5],["NCQ17","Health and Hygiene",312.9,2659.9],["NCQ29","Health and Hygiene",1041.3,2082.6],["NCQ30","Household",243.7,1137.2],["NCQ38","Others",213.1,1427.5],["NCQ41","Health and Hygiene",390.2,2926.2],["NCQ42","Household",254.3,1949.9],["NCQ43","Others",218.4,1070.1],["NCQ54","Household",168.4,4127.0],["NCR30","Household",223.7,671.1],["NCR38","Household",251.7,4479.8],["NCR42","Household",33.3,149.8],["NCR53","Health and Hygiene",450.1,3375.6],["NCR54","Household",196.4,2700.7],["NCS06","Household",263.0,2958.6],["NCS29","Health and Hygiene",265.0,4107.3],["NCS30","Household",645.8,1782.5],["NCS53","Health and Hygiene",316.9,2112.8],["NCS54","Household",352.9,3793.4],["NCT06","Household",165.8,2818.3],["NCT29","Health and Hygiene",243.7,852.9],["NCT30","Household",94.5,709.1],["NCT41","Health and Hygiene",151.8,2466.8],["NCT53","Health and Hygiene",657.8,2302.3],["NCU05","Health and Hygiene",161.1,1611.2],["NCU06","Household",1148.5,3790.1],["NCU18","Household",564.6,2681.8],["NCU29","Health and Hygiene",585.9,3515.4],["NCU53","Health and Hygiene",165.8,1934.1],["NCU54","Household",209.7,4666.4],["NCV05","Health and Hygiene",463.4,2111.0],["NCV06","Household",193.7,2092.5],["NCV29","Health and Hygiene",800.0,2725.8],["NCV30","Household",126.5,1075.3],["NCV41","Health and Hygiene",221.0,1834.7],["NCV42","Household",221.0,1989.4],["NCV53","Health and Hygiene",719.1,6311.8],["NCV54","Household",474.0,1611.8],["NCW06","Household",769.7,2822.1],["NCW29","Health and Hygiene",129.8,1558.0],["NCW42","Household",773.7,4420.9],["NCW53","Health and Hygiene",384.8,2357.1],["NCX05","Health and Hygiene",231.7,1882.5],["NCX06","Household",543.3,3622.0],["NCX18","Household",294.6,2946.2],["NCX29","Health and Hygiene",510.3,2430.2],["NCX30","Household",495.4,3467.5],["NCX41","Health and Hygiene",1482.1,3034.7],["NCX42","Household",822.3,2565.5],["NCX53","Health and Hygiene",567.3,3545.4],["NCX54","Household",105.9,1651.5],["NCY18","Household",525.3,3969.1],["NCY29","Health and Hygiene",113.2,792.3],["NCY41","Health and Hygiene",143.8,733.4],["NCZ05","Health and Hygiene",103.2,980.4],["NCZ06","Household",761.0,3361.1],["NCZ17","Health and Hygiene",38.0,974.1],["NCZ18","Household",761.0,5022.7],["NCZ29","Health and Hygiene",503.3,2055.3],["NCZ30","Household",241.0,1807.6],["NCZ42","Household",711.1,4622.0],["NCZ53","Health and Hygiene",376.8,3580.0],["NCZ54","Household",243.7,4711.2]],"pares_resumen":{"n":898,"pct_super":100.0,"mediana_x":7.5,"max":7343.0},"vitrina":{"vis_barrio":0.1081,"vis_super":0.0653,"ventas_barrio":339.8,"ventas_super":2449.3,"corr_min":-0.015,"corr_max":0.018,"efecto_mas50":-6379.0,"corr_super":-0.013,"corr_barrio":0.018},"brecha":{"total":2140390.0,"productos":1083,"por_producto":1976.0,"pct_cadena":11.5,"promedio_super1":2316.0,"promedio_barrio":340.0},"piloto":{"ventas":179694.0,"productos":528,"por_producto":340.3,"vecinas_por_producto":2265.0,"total_cadena":18591125.0},"misma_ciudad":{"nivel1_x":7.3,"nivel3_x":8.5,"pct":99.6},"tamano":{"tiendas":[{"id":"OUT019","tipo":"Tienda de barrio","tam":"pequeña","ciudad":"Nivel 1","productos":528,"por_producto":340.3},{"id":"OUT046","tipo":"Supermercado Tipo 1","tam":"pequeña","ciudad":"Nivel 1","productos":930,"por_producto":2277.8},{"id":"OUT035","tipo":"Supermercado Tipo 1","tam":"pequeña","ciudad":"Nivel 2","productos":930,"por_producto":2438.8},{"id":"OUT049","tipo":"Supermercado Tipo 1","tam":"mediana","ciudad":"Nivel 1","productos":930,"por_producto":2348.4},{"id":"OUT013","tipo":"Supermercado Tipo 1","tam":"grande","ciudad":"Nivel 3","productos":932,"por_producto":2299.0}],"mismo_producto":{"n":308,"mediana_x":7.0,"pct":97.7}}};
+</script>
+<script>
+(() => {
+  const D = DATOS;
+  const escenario = document.getElementById('escenario');
+  const $ = (id) => document.getElementById(id);
+
+  // Formatos en español de Colombia
+  const f0 = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 });
+  const f1 = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const f2 = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const millones = (v) => f1.format(v / 1e6) + ' M';
+  const miles = (v) => f0.format(Math.round(v / 1000)) + ' mil';
+  const pct = (v) => f0.format(v * 100) + ' %';
+  const pct1 = (v) => f1.format(v * 100) + ' %';
+
+  // Ventas totales por tienda, sumadas de train.csv
+  const TIENDAS = [
+    { id: 'OUT019', tipo: 'Tienda de barrio', ciudad: 'Nivel 1', productos: 528, ventas: 179694 },
+    { id: 'OUT010', tipo: 'Tienda de barrio', ciudad: 'Nivel 3', productos: 555, ventas: 188340 },
+    { id: 'OUT018', tipo: 'Supermercado Tipo 2', ciudad: 'Nivel 3', productos: 928, ventas: 1851823 },
+    { id: 'OUT045', tipo: 'Supermercado Tipo 1', ciudad: 'Nivel 2', productos: 929, ventas: 2036725 },
+    { id: 'OUT046', tipo: 'Supermercado Tipo 1', ciudad: 'Nivel 1', productos: 930, ventas: 2118395 },
+    { id: 'OUT013', tipo: 'Supermercado Tipo 1', ciudad: 'Nivel 3', productos: 932, ventas: 2142664 },
+    { id: 'OUT017', tipo: 'Supermercado Tipo 1', ciudad: 'Nivel 2', productos: 926, ventas: 2167465 },
+    { id: 'OUT049', tipo: 'Supermercado Tipo 1', ciudad: 'Nivel 1', productos: 930, ventas: 2183970 },
+    { id: 'OUT035', tipo: 'Supermercado Tipo 1', ciudad: 'Nivel 2', productos: 930, ventas: 2268123 },
+    { id: 'OUT027', tipo: 'Supermercado Tipo 3', ciudad: 'Nivel 3', productos: 935, ventas: 3453926 },
+  ];
+  const esBarrio = (t) => t.tipo === 'Tienda de barrio';
+  const total = TIENDAS.reduce((s, t) => s + t.ventas, 0);
+  const barrio = TIENDAS.filter(esBarrio);
+  const ventasBarrio = barrio.reduce((s, t) => s + t.ventas, 0);
+
+  // Tooltip compartido, en coordenadas del escenario
+  const tip = document.createElement('div');
+  tip.className = 'tip';
+  tip.hidden = true;
+  escenario.append(tip);
+  const escala = () => escenario.getBoundingClientRect().width / 1920;
+  function mostrarTip(evento, titulo, filas) {
+    const t = document.createElement('strong');
+    t.textContent = titulo;
+    tip.replaceChildren(t, ...filas.map(([k, v]) => {
+      const fila = document.createElement('div');
+      const a = document.createElement('span');
+      const b = document.createElement('span');
+      a.textContent = k;
+      b.textContent = v;
+      fila.append(a, b);
+      return fila;
+    }));
+    tip.hidden = false;
+    const caja = escenario.getBoundingClientRect();
+    const x = (evento.clientX - caja.left) / escala();
+    const y = (evento.clientY - caja.top) / escala();
+    let left = x + 20;
+    if (left + tip.offsetWidth > 1920 - 24) left = x - tip.offsetWidth - 20;
+    let top = y - tip.offsetHeight - 16;
+    if (top < 16) top = y + 24;
+    tip.style.left = left + 'px';
+    tip.style.top = top + 'px';
+  }
+  const ocultarTip = () => { tip.hidden = true; };
+
+  function barraFila(contenedor, { nombre, detalle, valor, texto, max, ancho, protagonista }) {
+    const fila = document.createElement('div');
+    fila.className = 'barra-fila';
+    const n = document.createElement('span');
+    n.className = 'barra-nombre';
+    n.textContent = nombre;
+    if (detalle) {
+      const s = document.createElement('small');
+      s.textContent = detalle;
+      n.append(s);
+    }
+    const pista = document.createElement('div');
+    pista.className = 'barra-pista';
+    const b = document.createElement('div');
+    b.className = 'barra' + (protagonista ? ' protagonista' : '');
+    b.style.width = Math.max(4, (valor / max) * ancho) + 'px';
+    const v = document.createElement('span');
+    v.className = 'barra-valor';
+    v.textContent = texto;
+    pista.append(b, v);
+    fila.append(n, pista);
+    contenedor.append(fila);
+  }
+
+  function segmentado(contenedor, opciones, inicial, alCambiar) {
+    let actual = inicial;
+    const botones = opciones.map(([valor, etiqueta]) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('role', 'radio');
+      b.textContent = etiqueta;
+      b.addEventListener('click', () => { actual = valor; pintar(); });
+      contenedor.append(b);
+      return [valor, b];
+    });
+    function pintar() {
+      botones.forEach(([valor, b]) => b.setAttribute('aria-checked', String(valor === actual)));
+      alCambiar(actual);
+    }
+    pintar();
+  }
+
+  // 1. CONTEXTO
+  $('s1-titulo-pct').textContent = pct(ventasBarrio / total);
+  $('s1-contexto').textContent = `Somos ${TIENDAS.length} tiendas, ${f0.format(1559)} productos y ${millones(total)} en ventas al año.`;
+  $('s1-pct-tiendas').textContent = pct(barrio.length / TIENDAS.length);
+  $('s1-nota-tiendas').textContent = `${barrio.length} de ${TIENDAS.length}`;
+  $('s1-pct-ventas').textContent = pct(ventasBarrio / total);
+  $('s1-nota-ventas').textContent = `${miles(ventasBarrio)} de ${millones(total)}`;
+  $('s1-giro-monto').textContent = f1.format(D.brecha.total / 1e6) + ' millones';
+  $('s1-fuente').textContent =
+    `Fuente: train.csv, ${f0.format(8523)} registros (EDA, sección 7.6). Cálculo: ${f0.format(ventasBarrio)} ÷ ${f0.format(total)} = ${f2.format(ventasBarrio / total * 100)} % de las ventas.`;
+  $('s1-grafico').setAttribute('aria-label',
+    `Las 2 tiendas de barrio son el ${pct(barrio.length / TIENDAS.length)} de las tiendas y el ${pct(ventasBarrio / total)} de las ventas.`);
+
+  function barraApilada(id, peso) {
+    $(id).replaceChildren(...TIENDAS.map((t) => {
+      const s = document.createElement('div');
+      s.className = 'segmento' + (esBarrio(t) ? ' barrio' : '');
+      s.style.flexGrow = String(peso(t));
+      s.addEventListener('pointermove', (e) => mostrarTip(e, t.id, [
+        ['Tipo', t.tipo], ['Ciudad', t.ciudad], ['Productos', f0.format(t.productos)],
+        ['Ventas', f0.format(t.ventas)], ['Parte de las ventas', f2.format(t.ventas / total * 100) + ' %'],
+      ]));
+      s.addEventListener('pointerleave', ocultarTip);
+      return s;
+    }));
+  }
+  barraApilada('s1-barra-tiendas', () => 1);
+  barraApilada('s1-barra-ventas', (t) => t.ventas);
+
+  // 2. HALLAZGO 1: la gaseosa DRL01
+  const gB = D.gaseosa.OUT019;
+  const gS = D.gaseosa.OUT049;
+  const maxG = Math.max(gB.ventas, gS.ventas);
+  barraFila($('s2-barras'), { nombre: 'OUT049', detalle: 'Supermercado Tipo 1, Nivel 1', valor: gS.ventas, texto: f0.format(gS.ventas), max: maxG, ancho: 1040 });
+  barraFila($('s2-barras'), { nombre: 'OUT019', detalle: 'Tienda de barrio, Nivel 1', valor: gB.ventas, texto: f0.format(gB.ventas), max: maxG, ancho: 1040, protagonista: true });
+  $('s2-precio').textContent = `${f0.format(gB.precio)} y ${f0.format(gS.precio)}`;
+  $('s2-vitrina').textContent = `${pct1(gB.vis)} y ${pct1(gS.vis)}`;
+  $('s2-vitrina-nota').textContent = `${f2.format(gB.vis / gS.vis)} veces más en la tienda de barrio`;
+  $('s2-fuente').textContent =
+    `Fuente: train.csv, producto DRL01 (gaseosa) en OUT019 y OUT049. Ventas del año: ${f0.format(gS.ventas)} ÷ ${f0.format(gB.ventas)} = ${f2.format(gS.ventas / gB.ventas)} veces. Vitrina: % del área de exhibición de la tienda.`;
+
+  // 3. HALLAZGO 2: dispersión del mismo producto
+  const R = D.pares_resumen;
+  $('s3-pct').textContent = f0.format(R.pct_super) + ' %';
+  $('s3-pct-nota').textContent = `de los ${f0.format(R.n)} productos que están en los dos tipos de tienda vende más en el supermercado`;
+  $('s3-veces').textContent = '×' + f1.format(R.mediana_x);
+  $('s3-ciudad').textContent =
+    `En la misma ciudad pasa igual: ×${f1.format(D.misma_ciudad.nivel1_x)} en Nivel 1 y ×${f1.format(D.misma_ciudad.nivel3_x)} en Nivel 3.`;
+  (function dispersion() {
+    const NS = 'http://www.w3.org/2000/svg';
+    const nodo = (tag, attrs, padre) => {
+      const n = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+      if (padre) padre.append(n);
+      return n;
+    };
+    const W = 640, H = 560, ml = 100, mt = 16, lado = 440;
+    const max = Math.ceil(R.max / 2500) * 2500;
+    const x = (v) => ml + (v / max) * lado;
+    const y = (v) => mt + lado - (v / max) * lado;
+    const svg = nodo('svg', { width: '100%', viewBox: `0 0 ${W} ${H}` });
+    svg.setAttribute('aria-label', `${R.n} productos: todos quedan por encima de la línea de venta igual.`);
+    const eje = nodo('g', { class: 'eje' }, svg);
+    for (let t = 0; t <= max; t += 2500) {
+      nodo('line', { x1: ml, x2: ml + lado, y1: y(t), y2: y(t), stroke: 'var(--rejilla)', 'stroke-width': 1 }, eje);
+      nodo('line', { x1: x(t), x2: x(t), y1: mt, y2: mt + lado, stroke: 'var(--rejilla)', 'stroke-width': 1 }, eje);
+      nodo('text', { x: ml - 16, y: y(t), 'text-anchor': 'end', 'dominant-baseline': 'middle' }, eje).textContent = f0.format(t);
+      nodo('text', { x: x(t), y: mt + lado + 32, 'text-anchor': 'middle' }, eje).textContent = f0.format(t);
+    }
+    nodo('text', { x: ml + lado / 2, y: H - 8, 'text-anchor': 'middle', class: 'eje-titulo' }, svg).textContent = 'Ventas en la tienda de barrio';
+    nodo('text', { x: 22, y: mt + lado / 2, 'text-anchor': 'middle', class: 'eje-titulo', transform: `rotate(-90 22 ${mt + lado / 2})` }, svg).textContent = 'Ventas en el supermercado';
+    nodo('line', { x1: x(0), y1: y(0), x2: x(max), y2: y(max), stroke: 'var(--gris)', 'stroke-width': 2, 'stroke-dasharray': '8 8' }, svg);
+    nodo('text', { x: x(max * 0.62), y: y(max * 0.5), class: 'nota-svg' }, svg).textContent = 'Si vendieran igual';
+    const puntos = D.pares.map(([producto, categoria, b, s]) => ({ producto, categoria, b, s, px: x(b), py: y(s) }));
+    const capa = nodo('g', {}, svg);
+    for (const p of puntos) nodo('circle', { cx: p.px, cy: p.py, r: 5, fill: 'var(--amarillo)', 'fill-opacity': 0.55 }, capa);
+    const anillo = nodo('circle', { r: 9, fill: 'none', stroke: 'var(--blanco)', 'stroke-width': 2, visibility: 'hidden' }, svg);
+    svg.addEventListener('pointermove', (e) => {
+      const pt = svg.createSVGPoint();
+      pt.x = e.clientX;
+      pt.y = e.clientY;
+      const q = pt.matrixTransform(svg.getScreenCTM().inverse());
+      let mejor = null, dist = 18 * 18;
+      for (const p of puntos) {
+        const d = (p.px - q.x) ** 2 + (p.py - q.y) ** 2;
+        if (d < dist) { dist = d; mejor = p; }
+      }
+      if (!mejor) { anillo.setAttribute('visibility', 'hidden'); ocultarTip(); return; }
+      anillo.setAttribute('cx', mejor.px);
+      anillo.setAttribute('cy', mejor.py);
+      anillo.setAttribute('visibility', 'visible');
+      mostrarTip(e, `${mejor.producto}, ${mejor.categoria}`, [
+        ['En tienda de barrio', f0.format(mejor.b)],
+        ['En supermercado', f0.format(mejor.s)],
+        ['Veces más', '×' + f1.format(mejor.s / mejor.b)],
+      ]);
+    });
+    svg.addEventListener('pointerleave', () => { anillo.setAttribute('visibility', 'hidden'); ocultarTip(); });
+    $('s3-dispersion').append(svg);
+  })();
+
+  // 4. HALLAZGO 3: el tamaño
+  const T = D.tamano;
+  const maxTam = Math.max(...T.tiendas.map((t) => t.por_producto));
+  for (const t of T.tiendas) {
+    barraFila($('tam-barras'), {
+      nombre: t.id,
+      detalle: `${t.tipo}, ${t.tam}, ${t.ciudad}`,
+      valor: t.por_producto,
+      texto: f0.format(t.por_producto),
+      max: maxTam,
+      ancho: 520,
+      protagonista: t.tipo === 'Tienda de barrio',
+    });
+  }
+  $('tam-barras').setAttribute('aria-label',
+    `Venta por producto: OUT019, tienda de barrio pequeña, ${f0.format(T.tiendas[0].por_producto)}. Los supermercados pequeños, medianos y grandes venden entre ${f0.format(Math.min(...T.tiendas.slice(1).map((t) => t.por_producto)))} y ${f0.format(maxTam)}.`);
+  const o19 = T.tiendas.find((t) => t.id === 'OUT019');
+  const o46 = T.tiendas.find((t) => t.id === 'OUT046');
+  $('tam-veces').textContent = '×' + f1.format(T.mismo_producto.mediana_x);
+  $('tam-veces-nota').textContent =
+    `vende OUT046 el mismo producto que OUT019 (mediana de ${f0.format(T.mismo_producto.n)} productos; el ${f1.format(T.mismo_producto.pct)} % vende más en OUT046)`;
+  $('tam-surtido').textContent = `${f0.format(o46.productos)} productos`;
+  $('tam-surtido-nota').textContent = `caben en una tienda pequeña: así opera OUT046. OUT019 hoy tiene ${f0.format(o19.productos)}.`;
+
+  // 5. HALLAZGO 4: vitrina
+  const V = D.vitrina;
+  const maxVis = Math.max(V.vis_barrio, V.vis_super);
+  barraFila($('s4-vitrina'), { nombre: 'Tienda de barrio', valor: V.vis_barrio, texto: pct1(V.vis_barrio), max: maxVis, ancho: 520, protagonista: true });
+  barraFila($('s4-vitrina'), { nombre: 'Supermercados', valor: V.vis_super, texto: pct1(V.vis_super), max: maxVis, ancho: 520 });
+  const maxVen = Math.max(V.ventas_barrio, V.ventas_super);
+  barraFila($('s4-ventas'), { nombre: 'Tienda de barrio', valor: V.ventas_barrio, texto: f0.format(V.ventas_barrio), max: maxVen, ancho: 520, protagonista: true });
+  barraFila($('s4-ventas'), { nombre: 'Supermercados', valor: V.ventas_super, texto: f0.format(V.ventas_super), max: maxVen, ancho: 520 });
+  $('s4-correlacion').textContent =
+    `Dentro de cada grupo, vitrina y ventas no se relacionan: correlación de ${f2.format(V.corr_super)} en supermercados y ${f2.format(V.corr_barrio)} en tiendas de barrio.`;
+  segmentado($('s4-control'), [[25, '+25 %'], [50, '+50 %'], [100, '+100 %']], 50, (extra) => {
+    const efecto = V.efecto_mas50 * (extra / 50);
+    $('s4-resultado').textContent =
+      `Con ${extra} % más vitrina: ${efecto < 0 ? '−' : '+'}${f0.format(Math.abs(efecto))} al año, frente a ${millones(total)} de la cadena.`;
+  });
+
+  // 5. SI NO HACEMOS NADA
+  const B = D.brecha;
+  $('s5-producto').textContent = f0.format(B.por_producto);
+  $('s5-anio').textContent = millones(B.total);
+  $('s5-anio-nota').textContent = `por año, el ${f1.format(B.pct_cadena)} % de lo que vende toda la cadena`;
+  $('s5-fuente').textContent =
+    `Fuente: EDA, sección 7.6. Cálculo: (${f0.format(B.promedio_super1)} − ${f0.format(B.promedio_barrio)}) × ${f0.format(B.productos)} productos = ${f0.format(B.total)} al año. Es un techo: supone que la brecha se repite igual cada año.`;
+  const ANIOS = [1, 2, 3, 4, 5];
+  const cajaAnios = $('s5-anios');
+  const columnas = ANIOS.map((n) => {
+    const col = document.createElement('div');
+    col.className = 'anio';
+    const valor = document.createElement('span');
+    valor.className = 'anio-valor';
+    const barra = document.createElement('div');
+    barra.className = 'anio-barra';
+    barra.style.height = (n / ANIOS.length) * 180 + 'px';
+    const nombre = document.createElement('span');
+    nombre.className = 'anio-nombre';
+    nombre.textContent = n === 1 ? 'Año 1' : `Año ${n}`;
+    col.append(valor, barra, nombre);
+    cajaAnios.append(col);
+    return { n, col, valor };
+  });
+  segmentado($('s5-control'), [[1, '1 año'], [2, '2 años'], [3, '3 años'], [5, '5 años']], 3, (anios) => {
+    $('s5-acumulado').textContent = millones(B.total * anios);
+    $('s5-acumulado-nota').textContent = anios === 1 ? 'en 1 año sin hacer nada' : `en ${anios} años sin hacer nada`;
+    columnas.forEach(({ n, col, valor }) => {
+      col.classList.toggle('en-rango', n < anios);
+      col.classList.toggle('elegido', n === anios);
+      valor.textContent = n === anios ? millones(B.total * n) : '';
+    });
+    cajaAnios.setAttribute('aria-label', `Acumulado en ${anios} años: ${millones(B.total * anios)}`);
+  });
+
+  // 6. ACCIÓN: el piloto en OUT019
+  const P = D.piloto;
+  $('s6-paso1').textContent =
+    `OUT019 opera 3 meses como OUT046: Supermercado Tipo 1, igual de pequeña, con unos 930 productos (hoy tiene ${f0.format(P.productos)}).`;
+  const FRASES = {
+    1.5: 'Aunque OUT019 solo suba 50 %, el mínimo para seguir con el piloto.',
+    2: 'Si OUT019 duplica su venta por producto, la meta del piloto.',
+    3: 'Si OUT019 triplica su venta por producto.',
+  };
+  segmentado($('s6-control'), [[1.5, '×1,5 piso'], [2, '×2 meta'], [3, '×3']], 2, (k) => {
+    const extra = P.ventas * (k - 1);
+    $('s6-numero').textContent = '+' + miles(extra) + ' al año';
+    $('s6-frase').textContent = FRASES[k];
+    $('s6-nota').textContent =
+      `Venta por producto: de ${f0.format(P.por_producto)} a ${f0.format(P.por_producto * k)}. Un supermercado de su ciudad vende ${f0.format(P.vecinas_por_producto)}. ` +
+      `Es el ${f1.format(extra / P.total_cadena * 100)} % de la cadena. Cálculo: ventas de OUT019 en el año (${f0.format(P.ventas)}) × (${f1.format(k)} − 1).`;
+  });
+
+  // Navegación: cada slide puede tener pasos (data-pasos)
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const contador = $('contador');
+  let i = 0;
+  let paso = 0;
+  const pasosDe = (s) => Number(s.dataset.pasos || 1);
+
+  function leerHash() {
+    const m = location.hash.match(/^#(\d+)(?:-(\d+))?$/);
+    if (location.hash === '#giro') { i = 0; paso = 1; return; }
+    if (!m) return;
+    i = Math.min(slides.length, Math.max(1, Number(m[1]))) - 1;
+    paso = Math.min(pasosDe(slides[i]), Math.max(1, Number(m[2] || 1))) - 1;
+  }
+
+  function pintar() {
+    slides.forEach((s, n) => s.classList.toggle('activa', n === i));
+    slides[i].querySelectorAll('[data-paso]').forEach((el) => {
+      el.classList.toggle('visible', paso >= Number(el.dataset.paso));
+    });
+    contador.textContent = `${i + 1} / ${slides.length}`;
+    contador.classList.toggle('sobre-amarillo', slides[i].classList.contains('amarilla'));
+    ocultarTip();
+    history.replaceState(null, '', `#${i + 1}` + (paso ? `-${paso + 1}` : ''));
+  }
+
+  function avanzar() {
+    if (paso < pasosDe(slides[i]) - 1) paso += 1;
+    else if (i < slides.length - 1) { i += 1; paso = 0; }
+    pintar();
+  }
+  function retroceder() {
+    if (paso > 0) paso -= 1;
+    else if (i > 0) { i -= 1; paso = pasosDe(slides[i]) - 1; }
+    pintar();
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.target.closest && e.target.closest('button') && (e.key === ' ' || e.key === 'Enter')) return;
+    if (['ArrowRight', 'ArrowDown', ' ', 'PageDown', 'Enter'].includes(e.key)) { e.preventDefault(); avanzar(); }
+    else if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); retroceder(); }
+    else if (e.key === 'Home') { i = 0; paso = 0; pintar(); }
+    else if (e.key === 'End') { i = slides.length - 1; paso = 0; pintar(); }
+    else if (e.key === 'f' || e.key === 'F') {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
+    }
+  });
+  escenario.addEventListener('click', (e) => {
+    if (e.target.closest('button, .segmentado')) return;
+    avanzar();
+  });
+
+  function escalar() {
+    const s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    escenario.style.transform = `translate(-50%, -50%) scale(${s})`;
+  }
+  window.addEventListener('resize', escalar);
+  escalar();
+  leerHash();
+  pintar();
+})();
+</script>
+</body>
+</html>

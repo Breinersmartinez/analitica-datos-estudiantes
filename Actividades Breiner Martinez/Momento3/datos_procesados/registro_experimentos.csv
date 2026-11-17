@@ -1,0 +1,27 @@
+modelo,configuración,MAE validación cruzada (entrenamiento),R2 prueba,MAE prueba,gap R2,elegido
+Árbol de decisión,"{'max_depth': 2, 'min_samples_leaf': 1}",843.7175720238222,,,,
+Árbol de decisión,"{'max_depth': 2, 'min_samples_leaf': 20}",843.7175720238222,,,,
+Árbol de decisión,"{'max_depth': 2, 'min_samples_leaf': 50}",843.7175720238222,,,,
+Árbol de decisión,"{'max_depth': 3, 'min_samples_leaf': 1}",822.6209070937018,,,,
+Árbol de decisión,"{'max_depth': 3, 'min_samples_leaf': 20}",821.9907048547999,,,,
+Árbol de decisión,"{'max_depth': 3, 'min_samples_leaf': 50}",821.9907048547999,,,,
+Árbol de decisión,"{'max_depth': 5, 'min_samples_leaf': 1}",827.7216548801873,,,,
+Árbol de decisión,"{'max_depth': 5, 'min_samples_leaf': 20}",824.624158012682,,,,
+Árbol de decisión,"{'max_depth': 5, 'min_samples_leaf': 50}",823.9356575221743,,,,
+Árbol de decisión,"{'max_depth': 8, 'min_samples_leaf': 1}",878.6667401347619,,,,
+Árbol de decisión,"{'max_depth': 8, 'min_samples_leaf': 20}",842.9614376200918,,,,
+Árbol de decisión,"{'max_depth': 8, 'min_samples_leaf': 50}",829.8021345729383,,,,
+Ridge,{'alpha': 0.1},816.4408118476146,,,,
+Ridge,{'alpha': 1},816.4108033097267,,,,
+Ridge,{'alpha': 10},816.1889188188337,,,,
+Ridge,{'alpha': 100},816.0098204500996,,,,
+Random Forest,"{'max_depth': 5, 'min_samples_leaf': 5}",816.1920559294338,,,,
+Random Forest,"{'max_depth': 5, 'min_samples_leaf': 20}",816.4789097915129,,,,
+Random Forest,"{'max_depth': 10, 'min_samples_leaf': 5}",837.0436600935197,,,,
+Random Forest,"{'max_depth': 10, 'min_samples_leaf': 20}",824.9382120930993,,,,
+Random Forest,"{'max_depth': None, 'min_samples_leaf': 5}",855.3371537110597,,,,
+Random Forest,"{'max_depth': None, 'min_samples_leaf': 20}",825.4407628162242,,,,
+Dummy (media),strategy=mean,1196.4827744303304,-0.00025044983306932167,1229.2240924475682,0.00025044983306932167,False
+Árbol de decisión,MEJOR de su grilla,821.9907048547999,0.4682643838471988,835.990659772665,-0.0040885437762389065,False
+Ridge,MEJOR de su grilla,816.0098204500996,0.4758469117046794,825.4121357458147,-0.011453761008230479,True
+Random Forest,MEJOR de su grilla,816.1920559294338,0.47145069211847224,827.3346199179678,0.024272708058402648,False
