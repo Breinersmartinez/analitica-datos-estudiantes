@@ -92,11 +92,25 @@ PROBLEMA = """
       <div class="tarjeta"><p class="paso-numero chico">Quién ejecuta</p><p class="paso-verbo mediano">Operaciones</p><p class="paso-texto">La gerencia de operaciones convierte y mide OUT019. Los equipos de OUT019 y OUT010 son los afectados.</p></div>
       <div class="tarjeta"><p class="paso-numero chico">Objetivo medible</p><p class="paso-verbo mediano" id="p-meta"></p><p class="paso-texto" id="p-smart"></p></div>
     </div>
+    <div class="no-respaldan">
+      <p class="no-titulo">Lo que no sabemos de estas dos tiendas</p>
+      <ul class="no-lista">
+        <li><b>Dónde están,</b> ni si hay supermercados cerca: los datos solo traen el nivel de la ciudad.</li>
+        <li id="p-n2"></li>
+        <li><b>Espacio y costos:</b> no están en los datos, así que no podemos evaluar ampliar ni cerrar y reubicar.</li>
+        <li><b>Por eso</b> convertir la tienda es una hipótesis. El piloto es lo que la prueba.</li>
+      </ul>
+    </div>
     <p class="fuente" id="p-fuente"></p>
   </section>
 
 """
 una_vez("  <!-- 2. HALLAZGO 1 -->", PROBLEMA + "  <!-- 3. HALLAZGO 1 -->")
+
+# Lo que era aritmética simple deja de llamarse "simulación" (observación P4 del profesor)
+una_vez("Simulación: denle más vitrina a las tiendas de barrio", "Escenario estadístico: denle más vitrina a las tiendas de barrio")
+una_vez("Simulación: años sin hacer nada", "Escenario: la misma brecha durante varios años (multiplicación simple, sin pronóstico)")
+una_vez("Simulación: ¿y si rinde menos de lo esperado?", "Escenarios: ¿y si rinde menos de lo esperado? (aritmética simple)")
 
 # ---------------------------------------------------------------- hallazgo 1
 una_vez("Vitrina: % del área de exhibición de la tienda.`;",
@@ -235,8 +249,12 @@ JS_NUEVO = """
   $('p-meta').textContent = `${f0.format(P.por_producto)} a ${f0.format(P.por_producto * 2)}`;
   $('p-smart').textContent =
     `Venta por producto de OUT019 en 3 meses: de ${f0.format(P.por_producto)} hoy a ${f0.format(P.por_producto * 1.5)} como piso (×1,5) y ${f0.format(P.por_producto * 2)} como meta (×2), medida contra OUT010 y contra OUT046 y OUT049.`;
+  const t19 = TIENDAS.find((t) => t.id === 'OUT019');
+  const t10 = TIENDAS.find((t) => t.id === 'OUT010');
+  $('p-n2').innerHTML =
+    `<b>Peras con peras:</b> no hay otra tienda de barrio con la cual compararlas. Entre sí se parecen: ${f0.format(t19.ventas / t19.productos)} y ${f0.format(t10.ventas / t10.productos)} por producto.`;
   $('p-fuente').textContent =
-    `Cómo se compara: cada tienda de barrio contra Supermercados Tipo 1, un solo tipo y la misma ciudad cuando se puede, y contra la otra tienda de barrio. No existe en los datos un par exacto de una tienda de barrio. Venta por producto de OUT019: ${f0.format(P.ventas)} ÷ ${f0.format(P.productos)} productos.`;
+    `Cómo se compara: cada tienda de barrio contra Supermercados Tipo 1 (un solo tipo, y la misma ciudad cuando se puede) y contra la otra tienda de barrio. Son tipologías de negocio distintas: la comparación es una hipótesis que el piloto prueba. Venta por producto de OUT019: ${f0.format(P.ventas)} ÷ ${f0.format(P.productos)} productos.`;
 
   // EL MODELO
   const MM = D.m3.modelo;
